@@ -98,7 +98,7 @@ export function MessageBubble({ message, onFeedback, isLastAssistant }: Props) {
       aria-busy={isPlaceholder || undefined}
     >
       <div className="font-mono text-[11px] tracking-[0.14em] text-ink-mute mb-1.5">
-        Answer.
+        {isPlaceholder ? "Working." : "Answer."}
       </div>
 
       {isPlaceholder ? (

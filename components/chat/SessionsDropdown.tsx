@@ -89,7 +89,7 @@ export function SessionsDropdown({
         align="end"
         sideOffset={8}
         onMouseLeave={() => actionsRef.current?.close()}
-        className="min-w-[300px] max-w-[360px] p-0 rounded-md bg-background ring-1 ring-rule shadow-[0_8px_24px_-4px_oklch(0.22_0.005_75/0.18)]"
+        className="min-w-[300px] max-w-[360px] p-0 rounded-md bg-background ring-1 ring-rule shadow-[0_8px_24px_-4px_var(--shadow-ink)]"
       >
         <button
           type="button"

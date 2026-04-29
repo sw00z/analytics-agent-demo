@@ -43,7 +43,12 @@ export function ChatInput({
     <div className="shrink-0 border-t border-rule px-6 sm:px-14 pt-2 pb-3 bg-background">
       <div className="mx-auto w-full max-w-[60rem] flex flex-col gap-2">
         {retryAfter !== null && (
-          <div className="flex items-center gap-1.5 font-serif italic text-[13px] text-destructive self-start">
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="flex items-center gap-1.5 font-serif italic text-[13px] text-destructive self-start"
+          >
             <AlertCircle className="size-3.5" />
             Too many requests. Try again in {retryAfter}s.
           </div>
@@ -59,8 +64,8 @@ export function ChatInput({
             onSubmit();
           }}
           className={cn(
-            "flex items-center gap-3 border-b border-rule-strong px-1 py-2.5",
-            "focus-within:border-accent transition-colors",
+            "flex items-center gap-3 border border-rule rounded-sm px-1 py-2.5",
+            "focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/10 transition-colors",
           )}
         >
           <Textarea

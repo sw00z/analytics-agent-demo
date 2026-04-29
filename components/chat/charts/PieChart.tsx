@@ -62,7 +62,10 @@ export function PieChart({ data, config }: Props) {
       width="100%"
       height={chartHeight(config.type, numericData.length)}
     >
-      <RcPieChart>
+      <RcPieChart
+        role="img"
+        aria-label={`Pie chart: ${nameKey} breakdown, ${numericData.length} categories`}
+      >
         <Pie
           data={numericData}
           dataKey={valueKey}

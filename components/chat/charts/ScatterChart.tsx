@@ -39,7 +39,11 @@ export function ScatterChart({ data, config }: Props) {
       width="100%"
       height={chartHeight(config.type, numericData.length)}
     >
-      <RcScatterChart margin={{ top: 6, right: 16, left: 4, bottom: 6 }}>
+      <RcScatterChart
+        margin={{ top: 6, right: 16, left: 4, bottom: 6 }}
+        role="img"
+        aria-label={`Scatter chart: ${xKey} versus ${yKey}, ${numericData.length} data points`}
+      >
         <CartesianGrid strokeDasharray="3 3" stroke="var(--rule)" />
         <XAxis
           type="number"

@@ -23,7 +23,7 @@ export const TOOLTIP_STYLE = {
   fontSize: 12,
   fontFamily: 'var(--font-serif), "Iowan Old Style", Palatino, serif',
   color: "var(--ink)",
-  boxShadow: "0 8px 24px -4px oklch(0.22 0.005 75 / 0.18)",
+  boxShadow: "0 8px 24px -4px var(--shadow-ink)",
   padding: "8px 12px",
 };
 

@@ -46,6 +46,8 @@ export function LineAreaChart({ data, config }: Props) {
       <ComposedChart
         data={numericData}
         margin={{ top: 6, right: 16, left: 4, bottom: 6 }}
+        role="img"
+        aria-label={`${isArea ? "Area" : "Line"} chart: ${config.xAxis} by ${valueKey}, ${numericData.length} data points`}
       >
         {isArea && (
           <defs>

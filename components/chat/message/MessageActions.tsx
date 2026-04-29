@@ -108,6 +108,7 @@ export function MessageActions({
     <div
       ref={rowRef}
       role="group"
+      aria-label="Message actions"
       className={cn(
         "relative flex flex-wrap items-center gap-x-[18px] gap-y-2",
         "mt-4 pt-3 border-t border-rule",
@@ -151,8 +152,22 @@ export function MessageActions({
 
       <div
         className="inline-flex items-center gap-1.5"
-        onMouseLeave={() => {
-          if (popOpen) setPopOpen(false);
+        onMouseLeave={() => { if (popOpen) setPopOpen(false); }}
+        onKeyDown={(e) => {
+          if (!popOpen) return;
+          const items = Array.from(
+            rowRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
+          );
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            const i = items.findIndex((el) => el === document.activeElement);
+            items[(i + 1) % items.length]?.focus();
+          }
+          if (e.key === "ArrowUp") {
+            e.preventDefault();
+            const i = items.findIndex((el) => el === document.activeElement);
+            items[(i - 1 + items.length) % items.length]?.focus();
+          }
         }}
       >
         <ActionLink
@@ -176,15 +191,7 @@ export function MessageActions({
             role="menu"
             aria-label="Copy options"
             aria-hidden={!popOpen}
-            className={cn(
-              "inline-flex items-center gap-0.5 overflow-hidden",
-              "rounded-sm bg-surface-2 px-1 py-0.5",
-              "transition-[max-width,opacity] duration-[260ms]",
-              "ease-[cubic-bezier(0.22,1,0.36,1)]",
-              popOpen
-                ? "max-w-[480px] opacity-100"
-                : "max-w-0 opacity-0 pointer-events-none",
-            )}
+            className="copy-popup-menu inline-flex items-center gap-0.5 rounded-sm bg-surface-2 px-1 py-0.5"
           >
             <CopyInlineOption
               icon={<AlignLeft className="size-3.5" />}

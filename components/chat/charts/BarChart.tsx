@@ -56,6 +56,14 @@ export function BarChart({ data, config }: Props) {
         margin={margin}
         layout={isHorizontal ? "vertical" : "horizontal"}
         barCategoryGap={isStacked && seriesKeys.length > 4 ? 2 : 4}
+        role="img"
+        aria-label={
+          isHorizontal
+            ? `Horizontal bar chart: ${numericData.length} ${config.xAxis ?? "items"} by ${seriesKeys[0]}`
+            : isStacked
+              ? `Stacked bar chart: ${config.xAxis} by ${seriesKeys.join(", ")}, ${numericData.length} items`
+              : `Bar chart: ${config.xAxis} by ${seriesKeys[0]}, ${numericData.length} items`
+        }
       >
         <CartesianGrid
           strokeDasharray="3 3"

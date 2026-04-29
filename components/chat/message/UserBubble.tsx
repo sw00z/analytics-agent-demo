@@ -12,7 +12,7 @@ interface Props {
 export function UserBubble({ id, content }: Props) {
   return (
     <div id={`msg-${id}`} className="animate-message-in-fast scroll-mt-3">
-      <div className="border-l-2 border-accent pl-[18px] py-1.5 max-w-[56ch]">
+      <div className="border-l-2 border-accent pl-4 pr-3.5 py-[9px] max-w-[56ch] rounded-r-[4px] bg-[oklch(0.62_0.12_75_/_0.09)]">
         <div className="font-mono text-[11px] tracking-[0.14em] text-accent-strong mb-1">
           Q.
         </div>
