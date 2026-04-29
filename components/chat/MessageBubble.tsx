@@ -16,6 +16,7 @@ import { UserBubble } from "./message/UserBubble";
 import { ErrorBubble } from "./message/ErrorBubble";
 import { ThinkingIndicator } from "./message/ThinkingIndicator";
 import { AssistantFigure } from "./message/AssistantFigure";
+import { AssistantMarkdown } from "./message/AssistantMarkdown";
 import { SqlBlock } from "./message/SqlBlock";
 import { MessageActions } from "./message/MessageActions";
 
@@ -104,9 +105,7 @@ export function MessageBubble({ message, onFeedback, isLastAssistant }: Props) {
       {isPlaceholder ? (
         <ThinkingIndicator />
       ) : (
-        <p className="font-serif text-[17px] leading-[1.62] text-ink max-w-[60ch] whitespace-pre-wrap">
-          {message.content}
-        </p>
+        <AssistantMarkdown content={message.content} />
       )}
 
       {message.chartConfig && message.data && message.data.length > 0 && (
