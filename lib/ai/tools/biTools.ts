@@ -36,6 +36,11 @@ const BLOCKED_KEYWORDS = [
   "CALL",
 ];
 
+// Analytical tables only. The agent's own persistence tables
+// (agent_sessions, agent_messages, agent_feedback) are deliberately
+// excluded so the LLM cannot read its own message history through SQL.
+// Adding an analytical table requires updating the embedded schema doc
+// in lib/ai/prompts/biSystemPrompt.ts in the same change.
 const ALLOWED_TABLES = [
   "orders",
   "order_items",
@@ -59,21 +64,22 @@ export function sanitizeSqlQuery(
   const trimmed = rawSql.trim();
   const upper = trimmed.toUpperCase();
 
-  // Must start with SELECT or WITH (CTEs)
+  // Layer 1 — statement type: only SELECT or WITH (CTEs)
   if (!upper.startsWith("SELECT") && !upper.startsWith("WITH")) {
     return { ok: false, error: "Only SELECT queries are allowed." };
   }
 
-  // Block multiple statements
+  // Layer 2 — single statement only (blocks `; DROP TABLE x`)
   const statements = trimmed.split(";").filter((s) => s.trim().length > 0);
   if (statements.length > 1) {
     return { ok: false, error: "Multiple statements are not allowed." };
   }
 
-  // Strip string literals before keyword checking (avoid false positives)
+  // Layer 3 — DML/DDL keyword blocklist.
+  // Strip string literals BEFORE the keyword loop so legitimate values like
+  // order_status = 'INSERT' don't trigger false positives. The order matters:
+  // tests/biTools.test.ts:72-77 is the regression guard.
   const withoutStrings = upper.replace(/'[^']*'/g, "''");
-
-  // Block DML/DDL keywords
   for (const keyword of BLOCKED_KEYWORDS) {
     const regex = new RegExp(`\\b${keyword}\\b`);
     if (regex.test(withoutStrings)) {
@@ -81,7 +87,8 @@ export function sanitizeSqlQuery(
     }
   }
 
-  // Table allowlist — extract table references from FROM/JOIN clauses
+  // Layer 4 — table allowlist. Extract table refs from FROM/JOIN clauses
+  // and reject anything outside ALLOWED_TABLES.
   const tablePattern = /(?:FROM|JOIN)\s+([a-z_][a-z0-9_]*)/gi;
   let match;
   while ((match = tablePattern.exec(trimmed)) !== null) {
@@ -94,7 +101,7 @@ export function sanitizeSqlQuery(
     }
   }
 
-  // Enforce LIMIT
+  // LIMIT enforcement — append default 100 if absent, cap at 500 if present.
   let finalSql = trimmed.replace(/;$/, "");
   if (!upper.includes("LIMIT")) {
     finalSql += ` LIMIT ${DEFAULT_LIMIT}`;

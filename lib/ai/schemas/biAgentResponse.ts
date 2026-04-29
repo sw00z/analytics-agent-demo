@@ -8,7 +8,7 @@
 
 import { z } from "zod";
 
-const ChartConfigSchema = z.object({
+export const ChartConfigSchema = z.object({
   type: z
     .enum([
       "bar",
@@ -45,6 +45,9 @@ const ChartConfigSchema = z.object({
       "Required only for 'stacked_bar' — pass null for all other chart types. Lists the numeric column names to stack within each xAxis category (e.g. ['credit_card_total', 'boleto_total', 'voucher_total']).",
     ),
 });
+
+// Convenience type alias for consumers that just need the inferred shape.
+export type ChartConfig = z.infer<typeof ChartConfigSchema>;
 
 const BIDataResponse = z.object({
   type: z.literal("bi_data"),

@@ -14,10 +14,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import {
-  invokeBIAgent,
-  generateSessionTitle,
-} from "@/lib/ai/biAgentService";
+import { invokeBIAgent } from "@/lib/ai/biAgentService";
+import { generateSessionTitle } from "@/lib/ai/sessionTitle";
 import {
   createSession,
   saveUserMessage,

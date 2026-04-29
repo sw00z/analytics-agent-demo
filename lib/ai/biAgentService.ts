@@ -4,13 +4,12 @@
 //   - HTTP ↔ LangChain message boundary (plain objects → LangChain messages)
 //   - Optional Langfuse CallbackHandler attachment
 //   - Tool data extraction (raw SQL rows from tool messages → HTTP response)
-//   - Session title generation (separate lightweight LLM call)
+// Session title generation lives in lib/ai/sessionTitle.ts.
 
 import { CallbackHandler } from "@langfuse/langchain";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
-import { ChatOpenAI } from "@langchain/openai";
 import { biAgent } from "./biAgent";
-import type { BIAgentResponse } from "./schemas/biAgentResponse";
+import { type BIAgentResponse, type ChartConfig } from "./schemas/biAgentResponse";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,21 +27,8 @@ export interface BIAgentServiceResponse {
   answer: string;
   type: "bi_data" | "bi_conversational" | "bi_error";
   data?: unknown[];
-  chartConfig?: {
-    type:
-      | "bar"
-      | "horizontal_bar"
-      | "stacked_bar"
-      | "line"
-      | "area"
-      | "pie"
-      | "scatter"
-      | "table";
-    xAxis?: string;
-    yAxis?: string;
-    dataKey?: string;
-    series?: string[] | null;
-  };
+  // ChartConfig from the Zod schema — all fields required when present (bi_data guarantees population).
+  chartConfig?: ChartConfig;
   followUp?: string[];
   /** SQL the agent generated for this turn (pre-tenant-injection). Present
    *  only when the agent invoked execute_sql. */
@@ -179,47 +165,3 @@ export function extractToolSql(result: unknown): string | undefined {
   return undefined;
 }
 
-// ---------------------------------------------------------------------------
-// Generate Session Title (separate gpt-4o-mini call — not part of the agent)
-// ---------------------------------------------------------------------------
-
-let titleModel: ChatOpenAI | null = null;
-
-function getTitleModel(): ChatOpenAI {
-  if (titleModel) return titleModel;
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY is not set.");
-  }
-  titleModel = new ChatOpenAI({
-    model: "gpt-4o-mini",
-    apiKey: process.env.OPENAI_API_KEY,
-    temperature: 0.3,
-    maxTokens: 20,
-  });
-  return titleModel;
-}
-
-export async function generateSessionTitle(query: string): Promise<string> {
-  try {
-    const response = await getTitleModel().invoke([
-      {
-        role: "system",
-        content:
-          "You are a title generator for business intelligence chat sessions. " +
-          "Generate a short, descriptive title (max 50 characters) that captures " +
-          "the essence of the user's query. Focus on the key business metric or question. " +
-          "Examples: 'Revenue Analysis Q4', 'Top Categories', 'Payment Type Breakdown'",
-      },
-      { role: "user", content: query },
-    ]);
-
-    const title =
-      typeof response.content === "string"
-        ? response.content.trim()
-        : "BI Chat Session";
-    return title.length > 50 ? title.substring(0, 47) + "..." : title;
-  } catch (error) {
-    console.error("Error generating session title:", error);
-    return "BI Chat Session";
-  }
-}
