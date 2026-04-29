@@ -1,3 +1,4 @@
+allowedDeprecatedVersions: '{}'
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
