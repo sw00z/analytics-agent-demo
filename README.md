@@ -26,15 +26,29 @@ It's intended as a sample-work artifact: clone the repo, run it locally, look at
 
 ```mermaid
 flowchart LR
-    Browser[Browser<br/>Next.js client] -->|POST /api/agent| Route[Route Handler]
-    Route -->|rate limit check| RL[(Upstash Redis<br/>or in-memory)]
-    Route -->|invoke| Agent[BI Agent<br/>LangGraph + gpt-4o]
+    Browser([🖥 Browser<br/>Next.js client]) -->|POST /api/agent| Route((Route</br>Handler))
+    Route -->|rate limit check| RL[("⚡ Upstash Redis<br/>or in-memory")]
+    Route -->|invoke| Agent[["🧠 BI Agent<br/>LangGraph + gpt-4o"]]
     Agent -->|generate SQL with $TENANT_ID| Tool[execute_sql tool]
-    Tool -->|4-layer safety filter| Tool
-    Tool -->|sanitized SELECT| DB[(Postgres / Neon)]
+    Tool --> Filter{{"🛡 4-layer safety filter"}}
+    Filter --> DB[("🐘 Postgres / Neon")]
     Agent -->|structured response| Route
-    Route -->|persist| Persistence[(agent_sessions<br/>agent_messages<br/>agent_feedback)]
+    Route -->|persist sessions / messages / feedback| DB
     Route -->|JSON| Browser
+
+    classDef browser  fill:#e0f2fe,stroke:#0369a1,stroke-width:2px,color:#0c4a6e;
+    classDef route    fill:#d1fae5,stroke:#047857,stroke-width:2px,color:#064e3b;
+    classDef agent    fill:#ede9fe,stroke:#6d28d9,stroke-width:3px,color:#4c1d95;
+    classDef redis    fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b;
+    classDef postgres fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1e3a8a;
+    classDef filter   fill:#fff3cd,stroke:#d97706,stroke-width:2px,color:#92400e;
+
+    class Browser browser;
+    class Route route;
+    class Agent agent;
+    class RL redis;
+    class DB postgres;
+    class Filter filter;
 ```
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for the deeper technical writeup.
@@ -47,80 +61,80 @@ The agent is split across five focused files. Everything else in this repo (UI, 
 
 Wires model + tools + middleware + response format. Owns `biContextSchema` and `BIContext` (the per-invocation envelope) so agent identity lives in one place.
 
-| Where | What |
-|-------|------|
+| Where                             | What                                                                                |
+| --------------------------------- | ----------------------------------------------------------------------------------- |
 | [L20–27](./lib/ai/biAgent.ts#L20) | `biContextSchema` — the per-invocation envelope (`tenantId`, `sessionId`, `userId`) |
-| [L40–44](./lib/ai/biAgent.ts#L40) | `ChatOpenAI` config — `gpt-4o`, `temperature: 0.1`, `maxTokens: 1500` |
-| [L46–52](./lib/ai/biAgent.ts#L46) | `createAgent` — wires model + tool + middleware + Zod `responseFormat` |
+| [L40–44](./lib/ai/biAgent.ts#L40) | `ChatOpenAI` config — `gpt-4o`, `temperature: 0.1`, `maxTokens: 1500`               |
+| [L46–52](./lib/ai/biAgent.ts#L46) | `createAgent` — wires model + tool + middleware + Zod `responseFormat`              |
 
 ### `lib/ai/prompts/biSystemPrompt.ts` — the cacheable prompt (~204 lines)
 
 All three prompt constants and their concatenation in one file. The header comment is the loudest in the codebase: editing this file has a real cost-and-latency consequence (OpenAI prompt cache keys on byte equivalence ≥ 1024 tokens).
 
-| Where | What |
-|-------|------|
-| [L17–38](./lib/ai/prompts/biSystemPrompt.ts#L17) | `BI_BASE_PROMPT` — persona + the load-bearing "never invent or fabricate data" guardrail |
-| [L40–170](./lib/ai/prompts/biSystemPrompt.ts#L40) | `BI_SCHEMA` — full DB schema embedded for SQL generation (column types, FK shape, soft-reference gaps, tenant-isolation contract). No RAG layer; the schema fits |
-| [L172–199](./lib/ai/prompts/biSystemPrompt.ts#L172) | `BI_RULES` — chart-selection rules (when to pick `horizontal_bar` over `bar`, when `stacked_bar` requires a `series` array, etc.) + critical SQL rules |
-| [L204](./lib/ai/prompts/biSystemPrompt.ts#L204) | `BI_SYSTEM_PROMPT_PREFIX` — the cacheable static block (~3,500 tokens). Cached prefixes are ~50% cheaper and ~10× lower latency on hits |
+| Where                                               | What                                                                                                                                                             |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [L17–38](./lib/ai/prompts/biSystemPrompt.ts#L17)    | `BI_BASE_PROMPT` — persona + the load-bearing "never invent or fabricate data" guardrail                                                                         |
+| [L40–170](./lib/ai/prompts/biSystemPrompt.ts#L40)   | `BI_SCHEMA` — full DB schema embedded for SQL generation (column types, FK shape, soft-reference gaps, tenant-isolation contract). No RAG layer; the schema fits |
+| [L172–199](./lib/ai/prompts/biSystemPrompt.ts#L172) | `BI_RULES` — chart-selection rules (when to pick `horizontal_bar` over `bar`, when `stacked_bar` requires a `series` array, etc.) + critical SQL rules           |
+| [L204](./lib/ai/prompts/biSystemPrompt.ts#L204)     | `BI_SYSTEM_PROMPT_PREFIX` — the cacheable static block (~3,500 tokens). Cached prefixes are ~50% cheaper and ~10× lower latency on hits                          |
 
 ### `lib/ai/prompts/biFewShot.ts` — SQL example corpus (~155 lines)
 
 8 hand-written few-shot SQL examples (one per chart pattern) and the `FewShotPromptTemplate` that consumes them. Formatted once at module load; the lazy pattern preserves cold-start semantics.
 
-| Where | What |
-|-------|------|
-| [L12–143](./lib/ai/prompts/biFewShot.ts#L12) | `SQL_EXAMPLES` — one per chart pattern (line, bar, horizontal_bar, pie, table, stacked_bar, area, scatter); every example carries `$TENANT_ID` |
-| [L145–151](./lib/ai/prompts/biFewShot.ts#L145) | `FewShotPromptTemplate` — formatted once at module load |
-| [L154–155](./lib/ai/prompts/biFewShot.ts#L154) | `formattedExamples` — exported `let`; Node ES-module live binding lets middleware read the post-format value |
+| Where                                          | What                                                                                                                                           |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| [L12–143](./lib/ai/prompts/biFewShot.ts#L12)   | `SQL_EXAMPLES` — one per chart pattern (line, bar, horizontal_bar, pie, table, stacked_bar, area, scatter); every example carries `$TENANT_ID` |
+| [L145–151](./lib/ai/prompts/biFewShot.ts#L145) | `FewShotPromptTemplate` — formatted once at module load                                                                                        |
+| [L154–155](./lib/ai/prompts/biFewShot.ts#L154) | `formattedExamples` — exported `let`; Node ES-module live binding lets middleware read the post-format value                                   |
 
 ### `lib/ai/middleware/biMiddleware.ts` — history + prompt assembly (~54 lines)
 
-| Where | What |
-|-------|------|
-| [L21–36](./lib/ai/middleware/biMiddleware.ts#L21) | `beforeModel` — trims to last 20 messages via `RemoveMessage` + `REMOVE_ALL_MESSAGES` sentinel |
+| Where                                             | What                                                                                                                        |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| [L21–36](./lib/ai/middleware/biMiddleware.ts#L21) | `beforeModel` — trims to last 20 messages via `RemoveMessage` + `REMOVE_ALL_MESSAGES` sentinel                              |
 | [L41–52](./lib/ai/middleware/biMiddleware.ts#L41) | `wrapModelCall` — appends few-shot examples + `current_date` _after_ the prefix; daily variance never invalidates the cache |
 
 ### `lib/ai/tools/biTools.ts` — the gate (185 lines)
 
 The single tool the agent has access to. Every SQL query the LLM generates is forced through four sanitization layers before it touches the database, plus a server-side tenant injection step the LLM cannot bypass.
 
-| Where | What |
-|-------|------|
-| [L19–37](./lib/ai/tools/biTools.ts#L19) | 17 blocked DML/DDL keywords (`INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `TRUNCATE`, `EXEC`, `MERGE`, …) |
-| [L39–49](./lib/ai/tools/biTools.ts#L39) | 9-table allowlist — only the analytical tables. The agent's own persistence tables (`agent_sessions`, `agent_messages`, `agent_feedback`) are deliberately excluded so the LLM cannot read its own message history through SQL |
-| [L62–65](./lib/ai/tools/biTools.ts#L62) | **Layer 1** — must start with `SELECT` or `WITH` (CTEs). Everything else (`PRAGMA`, `EXPLAIN`, `COPY`) bounces |
-| [L67–71](./lib/ai/tools/biTools.ts#L67) | **Layer 2** — single statement only (defeats `SELECT … ; DROP TABLE x`) |
-| [L73–82](./lib/ai/tools/biTools.ts#L73) | **Layer 3** — keyword blocklist applied to the query _with string literals stripped first_ ([L74](./lib/ai/tools/biTools.ts#L74)), so legitimate `WHERE status = 'INSERT'` queries pass |
-| [L84–95](./lib/ai/tools/biTools.ts#L84) | **Layer 4** — every table reference cross-checked against the allowlist |
-| [L97–109](./lib/ai/tools/biTools.ts#L97) | `LIMIT` enforcement — default 100, hard cap 500. `LIMIT 99999` is rewritten to `LIMIT 500` |
-| [L114–118](./lib/ai/tools/biTools.ts#L114) | `injectTenantId` — server-side string replace; the model never sees the literal value |
-| [L132–139](./lib/ai/tools/biTools.ts#L132) | `executeSql` rejects any query missing literal `$TENANT_ID` — tenant isolation is mandatory at the protocol layer, not just by convention |
+| Where                                      | What                                                                                                                                                                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [L19–37](./lib/ai/tools/biTools.ts#L19)    | 17 blocked DML/DDL keywords (`INSERT`, `UPDATE`, `DELETE`, `DROP`, `ALTER`, `TRUNCATE`, `EXEC`, `MERGE`, …)                                                                                                                    |
+| [L39–49](./lib/ai/tools/biTools.ts#L39)    | 9-table allowlist — only the analytical tables. The agent's own persistence tables (`agent_sessions`, `agent_messages`, `agent_feedback`) are deliberately excluded so the LLM cannot read its own message history through SQL |
+| [L62–65](./lib/ai/tools/biTools.ts#L62)    | **Layer 1** — must start with `SELECT` or `WITH` (CTEs). Everything else (`PRAGMA`, `EXPLAIN`, `COPY`) bounces                                                                                                                 |
+| [L67–71](./lib/ai/tools/biTools.ts#L67)    | **Layer 2** — single statement only (defeats `SELECT … ; DROP TABLE x`)                                                                                                                                                        |
+| [L73–82](./lib/ai/tools/biTools.ts#L73)    | **Layer 3** — keyword blocklist applied to the query _with string literals stripped first_ ([L74](./lib/ai/tools/biTools.ts#L74)), so legitimate `WHERE status = 'INSERT'` queries pass                                        |
+| [L84–95](./lib/ai/tools/biTools.ts#L84)    | **Layer 4** — every table reference cross-checked against the allowlist                                                                                                                                                        |
+| [L97–109](./lib/ai/tools/biTools.ts#L97)   | `LIMIT` enforcement — default 100, hard cap 500. `LIMIT 99999` is rewritten to `LIMIT 500`                                                                                                                                     |
+| [L114–118](./lib/ai/tools/biTools.ts#L114) | `injectTenantId` — server-side string replace; the model never sees the literal value                                                                                                                                          |
+| [L132–139](./lib/ai/tools/biTools.ts#L132) | `executeSql` rejects any query missing literal `$TENANT_ID` — tenant isolation is mandatory at the protocol layer, not just by convention                                                                                      |
 
 ### `lib/ai/schemas/biAgentResponse.ts` — the contract (101 lines)
 
 The Zod-based discriminated union the agent is forced to return. OpenAI's strict structured-output mode parses to this schema or fails — there is no escape hatch, no markdown JSON wrapping, no malformed responses.
 
-| Where | What |
-|-------|------|
-| [L11–47](./lib/ai/schemas/biAgentResponse.ts#L11) | `ChartConfigSchema` — 8 chart types (`bar`, `horizontal_bar`, `stacked_bar`, `line`, `area`, `pie`, `scatter`, `table`); `series` is `z.array().nullable()` ([L42–46](./lib/ai/schemas/biAgentResponse.ts#L42)) because OpenAI strict mode rejects optional fields |
-| [L49–62](./lib/ai/schemas/biAgentResponse.ts#L49) | `bi_data` variant — answer + chartConfig + 1–4 follow-ups |
-| [L64–74](./lib/ai/schemas/biAgentResponse.ts#L64) | `bi_conversational` variant — for greetings or non-data questions |
-| [L76–86](./lib/ai/schemas/biAgentResponse.ts#L76) | `bi_error` variant — for refusals (out-of-scope, schema violations) |
-| [L88–92](./lib/ai/schemas/biAgentResponse.ts#L88) | The discriminated union — runtime exhaustiveness for free |
-| [L99–101](./lib/ai/schemas/biAgentResponse.ts#L99) | Wrapped in `z.object()` because LangChain's `responseFormat` only accepts `ZodObject`, not unions directly. The header comment ([L1–8](./lib/ai/schemas/biAgentResponse.ts#L1)) documents the landmine |
+| Where                                              | What                                                                                                                                                                                                                                                               |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [L11–47](./lib/ai/schemas/biAgentResponse.ts#L11)  | `ChartConfigSchema` — 8 chart types (`bar`, `horizontal_bar`, `stacked_bar`, `line`, `area`, `pie`, `scatter`, `table`); `series` is `z.array().nullable()` ([L42–46](./lib/ai/schemas/biAgentResponse.ts#L42)) because OpenAI strict mode rejects optional fields |
+| [L49–62](./lib/ai/schemas/biAgentResponse.ts#L49)  | `bi_data` variant — answer + chartConfig + 1–4 follow-ups                                                                                                                                                                                                          |
+| [L64–74](./lib/ai/schemas/biAgentResponse.ts#L64)  | `bi_conversational` variant — for greetings or non-data questions                                                                                                                                                                                                  |
+| [L76–86](./lib/ai/schemas/biAgentResponse.ts#L76)  | `bi_error` variant — for refusals (out-of-scope, schema violations)                                                                                                                                                                                                |
+| [L88–92](./lib/ai/schemas/biAgentResponse.ts#L88)  | The discriminated union — runtime exhaustiveness for free                                                                                                                                                                                                          |
+| [L99–101](./lib/ai/schemas/biAgentResponse.ts#L99) | Wrapped in `z.object()` because LangChain's `responseFormat` only accepts `ZodObject`, not unions directly. The header comment ([L1–8](./lib/ai/schemas/biAgentResponse.ts#L1)) documents the landmine                                                             |
 
 ### `lib/ai/biAgentService.ts` — the boundary (~168 lines)
 
 The HTTP-side glue. Converts plain message history to LangChain types, attaches optional Langfuse tracing, invokes the agent, and pulls the raw SQL data and authored query out of LangGraph's message log for the UI.
 
-| Where | What |
-|-------|------|
-| [L19–48](./lib/ai/biAgentService.ts#L19) | Request/response interfaces — the contract between the route handler and the agent |
-| [L55–67](./lib/ai/biAgentService.ts#L55) | `buildLangfuseCallbacks` — full distributed tracing when `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are set; no-op otherwise |
-| [L73–120](./lib/ai/biAgentService.ts#L73) | `invokeBIAgent` — main entry; wires tenant context into LangGraph's `configurable` so the tool layer can read it |
+| Where                                       | What                                                                                                                                                               |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [L19–48](./lib/ai/biAgentService.ts#L19)    | Request/response interfaces — the contract between the route handler and the agent                                                                                 |
+| [L55–67](./lib/ai/biAgentService.ts#L55)    | `buildLangfuseCallbacks` — full distributed tracing when `LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` are set; no-op otherwise                                  |
+| [L73–120](./lib/ai/biAgentService.ts#L73)   | `invokeBIAgent` — main entry; wires tenant context into LangGraph's `configurable` so the tool layer can read it                                                   |
 | [L128–153](./lib/ai/biAgentService.ts#L128) | `extractToolData` — walks `ToolMessage`s in reverse to pull raw rows; the `structuredResponse` only carries the LLM's _summary_, the actual data lives in messages |
-| [L159–178](./lib/ai/biAgentService.ts#L159) | `extractToolSql` — surfaces the LLM-authored query (with `$TENANT_ID` still in place) so the UI can render it as a copyable, tenant-agnostic block |
+| [L159–178](./lib/ai/biAgentService.ts#L159) | `extractToolSql` — surfaces the LLM-authored query (with `$TENANT_ID` still in place) so the UI can render it as a copyable, tenant-agnostic block                 |
 
 Session title generation has moved to [`lib/ai/sessionTitle.ts`](./lib/ai/sessionTitle.ts) — separate `gpt-4o-mini` call (20 tokens, temp 0.3) to name new chat sessions.
 
