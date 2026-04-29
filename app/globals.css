@@ -310,3 +310,13 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Copy-menu wipe is state-change feedback (menu opening from trigger),
+   not decoration — qualifies as essential motion under WCAG 2.3.3 like
+   the thinking indicator above. Override the universal reduced-motion
+   clamp so the clip-path reveal stays perceptible. */
+@media (prefers-reduced-motion: reduce) {
+  .copy-popup-menu {
+    transition-duration: 260ms !important;
+  }
+}
