@@ -46,6 +46,12 @@ next-env.d.ts
 
 # Olist raw CSVs — too big for the repo, downloaded by hand. See seed/raw/.gitkeep
 seed/raw/*.csv
+seed/raw/brazilian-ecommerce
+seed/raw/brazilian-ecommerce.zip
+
+# local tool state
+.claude/
+.codex
 
 # IDE
 .idea
