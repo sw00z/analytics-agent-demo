@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files — keep .env.example in source, ignore everything else
 .env
+.envrc
 .env*.local
 .env.development
 .env.production
