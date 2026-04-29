@@ -1,26 +1,308 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-mono: var(--font-plex-mono);
+  --font-sans: var(--font-serif);
+  --font-heading: var(--font-serif);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-mute: var(--ink-mute);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-surface-2: var(--surface-2);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --text-3xs: 0.625rem;
+  --text-3xs--line-height: 0.875rem;
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --container-rail: 56rem;
+  --container-message: 90%;
+  --animate-message-in: message-in 280ms var(--ease-out-strong);
+  --animate-message-in-fast: message-in 240ms var(--ease-out-strong);
+  --animate-message-in-slow: message-in 360ms var(--ease-out-strong) both;
+  --animate-chip-in: chip-in 280ms var(--ease-out-strong) both;
+  --animate-quill-write: quill-write 1.4s ease-in-out infinite;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Gentle "writing" wobble for the thinking indicator's quill icon. Lives
+     inside @theme so Tailwind v4 hoists the keyframe into the compiled
+     output alongside the .animate-quill-write utility (per
+     tailwindcss.com/docs/animation; keyframes outside @theme are not
+     reliably emitted in v4 — see github.com/tailwindlabs/tailwindcss
+     discussion #17709). Pure transform-only keyframe so the browser
+     composites the animation on the GPU thread, sidestepping Chrome's
+     offscreen-animation throttle that pauses main-thread animations after
+     one iteration. */
+  @keyframes quill-write {
+    0%, 100% {
+      transform: rotate(-12deg) translateY(0);
+    }
+    50% {
+      transform: rotate(8deg) translateY(-1.5px);
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Editorial Paper palette. Single light theme — no dark counterpart. The
+   surface is warm cream (chroma 0.005, hue 75) so neutrals lean amber rather
+   than read as cold paper. Ink is a warm near-black at the same hue: never
+   #000. Accent is a deep ink-blue used at ≤10% surface coverage — buttons,
+   active states, the masthead mark, the user-turn left rule. */
+:root {
+  --background: oklch(0.97 0.005 75);
+  --surface-2: oklch(0.94 0.005 75);
+  --foreground: oklch(0.22 0.005 75);
+  --ink: oklch(0.22 0.005 75);
+  --ink-2: oklch(0.42 0.005 75);
+  --ink-mute: oklch(0.58 0.005 75);
+  --rule: oklch(0.22 0.005 75 / 0.16);
+  --rule-strong: oklch(0.22 0.005 75 / 0.36);
+
+  --card: oklch(0.97 0.005 75);
+  --card-foreground: oklch(0.22 0.005 75);
+  --popover: oklch(0.97 0.005 75);
+  --popover-foreground: oklch(0.22 0.005 75);
+
+  --accent: oklch(0.42 0.10 250);
+  --accent-strong: oklch(0.36 0.12 250);
+  --accent-soft: oklch(0.42 0.10 250 / 0.12);
+  --accent-foreground: oklch(0.97 0.005 75);
+
+  --primary: oklch(0.42 0.10 250);
+  --primary-foreground: oklch(0.97 0.005 75);
+  --secondary: oklch(0.94 0.005 75);
+  --secondary-foreground: oklch(0.22 0.005 75);
+  --muted: oklch(0.94 0.005 75);
+  --muted-foreground: oklch(0.58 0.005 75);
+
+  --destructive: oklch(0.50 0.18 28);
+
+  --border: oklch(0.22 0.005 75 / 0.16);
+  --input: oklch(0.22 0.005 75 / 0.22);
+  --ring: oklch(0.42 0.10 250 / 0.45);
+
+  /* Five-step chart palette for cream surface. Series rotate by hue and
+     drop in lightness so categorical channels stay distinguishable without
+     resorting to a rainbow. Ink-blue carries series 1 (the lone accent);
+     ink-warm carries series 2; sienna, ochre, and teal complete the set —
+     all at lightness ≤0.55 so each clears 3:1 contrast against cream. */
+  --chart-1: oklch(0.42 0.10 250);
+  --chart-2: oklch(0.32 0.020 75);
+  --chart-3: oklch(0.55 0.13 35);
+  --chart-4: oklch(0.62 0.12 75);
+  --chart-5: oklch(0.50 0.08 200);
+
+  /* Scrollbar palette. Track is a near-transparent ink wash so it reads as a
+     soft grey gutter on cream without competing with the page rules. Thumb
+     is the brand navy at low alpha — same hue as the Ask button so the
+     scrollbar feels native to the accent system, not a separate slate. */
+  --scrollbar-track: oklch(0.22 0.005 75 / 0.06);
+  --scrollbar-thumb: oklch(0.42 0.10 250 / 0.32);
+  --scrollbar-thumb-border: oklch(0.42 0.10 250 / 0.20);
+  --scrollbar-thumb-hover: oklch(0.42 0.10 250 / 0.55);
+
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Soft warm-on-warm radial — stays inside the cream register, lifts the
+       top of the page without tipping the surface toward decorative. */
+    background-image:
+      radial-gradient(1100px 520px at 50% -8%, oklch(0.99 0.008 75), transparent 65%);
+    background-attachment: fixed;
+    font-feature-settings: "kern", "liga", "calt";
+  }
+  html {
+    font-family: var(--font-serif);
+  }
+}
+
+/* Accent fill for primary actions — the editorial Ask button, dropdown
+   trigger active state, etc. */
+@utility tint-accent {
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+/* Surface for the SQL block: figure-inset cream-2 with hairline rule. */
+@utility tint-accent-soft {
+  border: 1px solid var(--rule);
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+@utility tint-destructive {
+  @apply border border-destructive/25 bg-destructive/10 text-destructive;
+}
+
+@utility focus-ring-accent {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+}
+
+@utility mask-edge-fade-x {
+  mask-image: linear-gradient(to right, transparent, black 18px, black calc(100% - 18px), transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 18px, black calc(100% - 18px), transparent);
+}
+
+@utility max-h-table {
+  max-height: 26.25rem;
+}
+
+@utility h-hero {
+  height: 28.75rem;
+}
+
+/* Universal scrollbar — translucent grey gutter, navy thumb. Every overflow
+   surface in the app inherits this look (SQL block horizontal rail, results
+   tables, dropdowns) except the chat scroll host, which opts out via
+   `scrollbar-none` and renders the floating overlay (`ScrollbarThumb`)
+   instead. */
+@layer utilities {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+  *::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+  *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+    border-radius: 9999px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-thumb);
+    border: 1px solid var(--scrollbar-thumb-border);
+    border-radius: 9999px;
+    outline: none;
+    box-shadow: none;
+  }
+  *::-webkit-scrollbar-thumb:hover,
+  *::-webkit-scrollbar-thumb:active {
+    background-color: var(--scrollbar-thumb-hover);
+    border-color: var(--scrollbar-thumb-hover);
+    outline: none;
+    box-shadow: none;
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* Floating overlay rail used by the chat scroll host. Inset from top/bottom
+   so it clears the topbar + composer chrome and reads as a floating gutter
+   rather than flush-to-edge. 11px wide to match the reference; the thumb
+   inside is rounded-full so it appears as a 9px capsule with 1px breathing
+   room on each side. */
+@utility scrollbar-track-floating {
+  position: absolute;
+  top: 1.5rem;
+  bottom: 1.5rem;
+  right: 16px;
+  width: 11px;
+  border-radius: 9999px;
+  background: var(--scrollbar-track);
+}
+
+/* Thumb fills used by the floating overlay. Split into rest + hover utilities
+   so the React component can swap them via a `data-active` attribute toggled
+   by track hover and active drag. */
+@utility scrollbar-thumb-navy {
+  background: var(--scrollbar-thumb);
+  border: 1px solid var(--scrollbar-thumb-border);
+}
+
+@utility scrollbar-thumb-navy-hover {
+  background: var(--scrollbar-thumb-hover);
+  border-color: var(--scrollbar-thumb-hover);
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Respect OS-level reduced-motion preference for decorative animation.
+   Loading indicators (.animate-quill-write) are exempt from the clamp as
+   essential motion under WCAG 2.3.3 — they communicate system state and
+   stripping them would degrade the user's ability to know the agent is
+   working. The :not() selector is the cheapest way to surgically exempt
+   one utility while keeping the catch-all behaviour for everything else. */
+@media (prefers-reduced-motion: reduce) {
+  *:not(.animate-quill-write),
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
