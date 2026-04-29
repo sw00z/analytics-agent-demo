@@ -243,7 +243,9 @@ lib/
 │   ├── tools/biTools.ts          ★ The 4-layer SQL safety filter
 │   └── schemas/biAgentResponse.ts Zod discriminated union
 ├── api/agent.ts                  Client-side fetch helpers + types
-├── charts/format.ts              Currency / number / chart-height helpers
+├── charts/
+│   ├── axis.ts                   Recharts axis fit / tick truncation helpers
+│   └── format.ts                 Currency / number / chart-height helpers
 ├── db/
 │   ├── client.ts                 Neon serverless connection
 │   ├── schema.ts                 Drizzle: 9 Olist tables + 3 agent tables
@@ -294,6 +296,7 @@ components/
 
 scripts/seed.ts                   CSV → Postgres bulk seed
 tests/
+├── chartsAxis.test.ts            Recharts axis-fit regression tests
 ├── biTools.test.ts               SQL safety unit tests
 └── biAgentService.test.ts        Tool-message extraction unit tests
 proxy.ts                          Next.js middleware: / → /chat

@@ -14,6 +14,7 @@ import {
   Scatter,
 } from "recharts";
 import type { ChartConfig } from "@/lib/api/agent";
+import { numericAxisFit } from "@/lib/charts/axis";
 import { chartHeight, coerceNumeric, formatValue } from "@/lib/charts/format";
 import {
   TICK_STYLE,
@@ -31,6 +32,8 @@ export function ScatterChart({ data, config }: Props) {
   const yKey = config.yAxis ?? config.dataKey ?? "y";
   const numericData = coerceNumeric(data, [xKey, yKey]);
   const dense = numericData.length > 200;
+  const xAxisFit = numericAxisFit(numericData, [xKey], formatValue);
+  const yAxisFit = numericAxisFit(numericData, [yKey], formatValue);
   const dotR = dense ? 2 : 3;
   const dotOpacity = dense ? 0.4 : 0.55;
 
@@ -53,6 +56,7 @@ export function ScatterChart({ data, config }: Props) {
           tickLine={false}
           axisLine={{ stroke: "var(--rule)" }}
           tickFormatter={(v) => formatValue(v, xKey)}
+          minTickGap={xAxisFit.minTickGap}
         />
         <YAxis
           type="number"
@@ -62,7 +66,8 @@ export function ScatterChart({ data, config }: Props) {
           tickLine={false}
           axisLine={false}
           tickFormatter={(v) => formatValue(v, yKey)}
-          width={64}
+          minTickGap={yAxisFit.minTickGap}
+          width={yAxisFit.width}
         />
         <Tooltip
           cursor={{ strokeDasharray: "3 3", stroke: "var(--accent)" }}

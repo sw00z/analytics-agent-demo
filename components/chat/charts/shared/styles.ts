@@ -34,13 +34,3 @@ export const TOOLTIP_LABEL_STYLE = {
   letterSpacing: "0.06em",
   marginBottom: 2,
 };
-
-// Diagonal X-axis treatment shared by bar / stacked_bar and line / area at
-// >6 categories. -38° is steep enough to read as a rotated tick (rather
-// than a pinched horizontal label) and clears 80px of vertical space below
-// the plot, which fits inside the figure's existing 4.5 padding.
-export const DIAGONAL_X_AXIS = {
-  angle: -38,
-  textAnchor: "end" as const,
-  height: 80,
-};

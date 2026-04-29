@@ -17,10 +17,14 @@ import {
   Legend,
 } from "recharts";
 import type { ChartConfig } from "@/lib/api/agent";
+import {
+  categoryXAxisFit,
+  categoryYAxisFit,
+  numericAxisFit,
+} from "@/lib/charts/axis";
 import { chartHeight, coerceNumeric, formatValue } from "@/lib/charts/format";
 import {
   CHART_COLORS,
-  DIAGONAL_X_AXIS,
   TICK_STYLE,
   TOOLTIP_LABEL_STYLE,
   TOOLTIP_STYLE,
@@ -39,7 +43,9 @@ export function BarChart({ data, config }: Props) {
       ? config.series
       : [config.dataKey ?? "value"];
   const numericData = coerceNumeric(data, seriesKeys);
-  const denseHorizontal = isHorizontal && numericData.length > 12;
+  const xCategoryFit = categoryXAxisFit(numericData, config.xAxis);
+  const yCategoryFit = categoryYAxisFit(numericData, config.xAxis);
+  const numericFit = numericAxisFit(numericData, seriesKeys, formatValue);
   const margin = isHorizontal
     ? { top: 6, right: 16, left: 16, bottom: 6 }
     : { top: 6, right: 16, left: 4, bottom: 6 };
@@ -77,19 +83,16 @@ export function BarChart({ data, config }: Props) {
           tick={TICK_STYLE}
           tickLine={false}
           axisLine={isHorizontal ? false : { stroke: "var(--rule)" }}
-          tickFormatter={isHorizontal ? numericTickFormatter : undefined}
-          angle={
-            !isHorizontal && data.length > 6 ? DIAGONAL_X_AXIS.angle : 0
+          tickFormatter={
+            isHorizontal ? numericTickFormatter : xCategoryFit.tickFormatter
           }
-          textAnchor={
-            !isHorizontal && data.length > 6
-              ? DIAGONAL_X_AXIS.textAnchor
-              : "middle"
+          angle={isHorizontal ? 0 : xCategoryFit.angle}
+          textAnchor={isHorizontal ? "middle" : xCategoryFit.textAnchor}
+          height={isHorizontal ? 30 : xCategoryFit.height}
+          interval={isHorizontal ? "preserveStartEnd" : xCategoryFit.interval}
+          minTickGap={
+            isHorizontal ? numericFit.minTickGap : xCategoryFit.minTickGap
           }
-          height={
-            !isHorizontal && data.length > 6 ? DIAGONAL_X_AXIS.height : 30
-          }
-          interval={0}
         />
         <YAxis
           type={isHorizontal ? "category" : "number"}
@@ -98,20 +101,13 @@ export function BarChart({ data, config }: Props) {
           tickLine={false}
           axisLine={false}
           tickFormatter={
-            isHorizontal
-              ? (v: unknown) => {
-                  // Truncate long category labels to 22ch with ellipsis at
-                  // dense row counts so wide names don't push the chart
-                  // body off-canvas.
-                  const s = String(v);
-                  if (denseHorizontal && s.length > 22) {
-                    return s.slice(0, 21) + "…";
-                  }
-                  return s;
-                }
-              : numericTickFormatter
+            isHorizontal ? yCategoryFit.tickFormatter : numericTickFormatter
           }
-          width={isHorizontal ? 140 : 64}
+          interval={isHorizontal ? yCategoryFit.interval : "preserveStartEnd"}
+          minTickGap={
+            isHorizontal ? yCategoryFit.minTickGap : numericFit.minTickGap
+          }
+          width={isHorizontal ? yCategoryFit.width : numericFit.width}
         />
         <Tooltip
           cursor={{ fill: "var(--accent-soft)" }}

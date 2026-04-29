@@ -16,9 +16,9 @@ import {
   Area,
 } from "recharts";
 import type { ChartConfig } from "@/lib/api/agent";
+import { categoryXAxisFit, numericAxisFit } from "@/lib/charts/axis";
 import { chartHeight, coerceNumeric, formatValue } from "@/lib/charts/format";
 import {
-  DIAGONAL_X_AXIS,
   TICK_STYLE,
   TOOLTIP_LABEL_STYLE,
   TOOLTIP_STYLE,
@@ -34,7 +34,8 @@ export function LineAreaChart({ data, config }: Props) {
   const numericData = coerceNumeric(data, [valueKey]);
   const isArea = config.type === "area";
   const dense = numericData.length > 24;
-  const diagonal = numericData.length > 6;
+  const xAxisFit = categoryXAxisFit(numericData, config.xAxis);
+  const yAxisFit = numericAxisFit(numericData, [valueKey], formatValue);
   const strokeWidth = dense ? 1.5 : 2.25;
   const fillOpacity = dense ? 0.12 : 0.2;
 
@@ -71,17 +72,24 @@ export function LineAreaChart({ data, config }: Props) {
           tick={TICK_STYLE}
           tickLine={false}
           axisLine={{ stroke: "var(--rule)" }}
-          interval={dense ? 1 : 0}
-          angle={diagonal ? DIAGONAL_X_AXIS.angle : 0}
-          textAnchor={diagonal ? DIAGONAL_X_AXIS.textAnchor : "middle"}
-          height={diagonal ? DIAGONAL_X_AXIS.height : 30}
+          tickFormatter={xAxisFit.tickFormatter}
+          interval={
+            dense
+              ? Math.max(1, Number(xAxisFit.interval) || 1)
+              : xAxisFit.interval
+          }
+          minTickGap={xAxisFit.minTickGap}
+          angle={xAxisFit.angle}
+          textAnchor={xAxisFit.textAnchor}
+          height={xAxisFit.height}
         />
         <YAxis
           tick={TICK_STYLE}
           tickLine={false}
           axisLine={false}
           tickFormatter={(v) => formatValue(v, valueKey)}
-          width={64}
+          minTickGap={yAxisFit.minTickGap}
+          width={yAxisFit.width}
         />
         <Tooltip
           cursor={{
@@ -116,7 +124,9 @@ export function LineAreaChart({ data, config }: Props) {
             dataKey={valueKey}
             stroke="var(--chart-1)"
             strokeWidth={strokeWidth}
-            dot={dense ? false : { r: 3, fill: "var(--chart-1)", strokeWidth: 0 }}
+            dot={
+              dense ? false : { r: 3, fill: "var(--chart-1)", strokeWidth: 0 }
+            }
             activeDot={{
               r: 5,
               fill: "var(--chart-1)",
