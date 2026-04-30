@@ -15,7 +15,7 @@ export function ChatEmptyState({ onSelect, disabled }: Props) {
   return (
     <div className="flex flex-col">
       <div className="font-mono text-[11px] tracking-[0.16em] uppercase text-ink-mute mb-3.5">
-        Volume IV · Issue 27
+        ----------------------------------------------------------
       </div>
       <h2 className="font-serif text-[38px] sm:text-[42px] font-medium leading-[1.1] tracking-[-0.01em] text-ink max-w-[18ch]">
         Hi, what would you like to know?

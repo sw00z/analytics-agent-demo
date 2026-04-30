@@ -30,7 +30,7 @@ export function ChatShell() {
             Analytics Agent
           </span>
           <span className="hidden sm:inline-block font-mono text-[11px] uppercase tracking-[0.10em] text-ink-mute border-l border-rule pl-3">
-            Issue 27 · Brazilian e-commerce
+            DEMO · Brazilian e-commerce
           </span>
         </div>
         <div className="flex-1" />
