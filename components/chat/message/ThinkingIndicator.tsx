@@ -126,11 +126,7 @@ export function ThinkingIndicator() {
   }, []);
 
   return (
-    <div
-      role="status"
-      aria-label="Thinking"
-      className="flex items-center py-1"
-    >
+    <div role="status" aria-label="Thinking" className="flex items-center py-1">
       <span
         ref={ref}
         aria-hidden="true"

@@ -63,9 +63,7 @@ describe("extractToolSql", () => {
 
   it("ignores calls with non-string query args (defensive)", () => {
     const result = {
-      messages: [
-        aiMessage([{ name: "execute_sql", args: { query: 42 } }]),
-      ],
+      messages: [aiMessage([{ name: "execute_sql", args: { query: 42 } }])],
     };
     expect(extractToolSql(result)).toBeUndefined();
   });

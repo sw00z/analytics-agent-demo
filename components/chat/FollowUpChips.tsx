@@ -66,7 +66,10 @@ export function FollowUpChips({ questions, onSelect, disabled }: Props) {
         }}
       >
         {questions.map((q, i) => (
-          <span key={`${i}-${q}`} className="inline-flex shrink-0 items-baseline gap-x-3">
+          <span
+            key={`${i}-${q}`}
+            className="inline-flex shrink-0 items-baseline gap-x-3"
+          >
             {i > 0 && (
               <span aria-hidden className="text-ink-mute">
                 ·

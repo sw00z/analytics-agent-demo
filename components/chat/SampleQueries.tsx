@@ -80,7 +80,8 @@ const QUERIES: QueryRow[] = [
     num: "007",
     label: (
       <>
-        Is there a relationship between <em>price</em> and <em>review score</em>?
+        Is there a relationship between <em>price</em> and <em>review score</em>
+        ?
       </>
     ),
     query: "Is there a relationship between product price and review score?",
@@ -90,7 +91,8 @@ const QUERIES: QueryRow[] = [
     num: "008",
     label: (
       <>
-        List the top sellers by <em>average review score</em>, minimum fifty reviews.
+        List the top sellers by <em>average review score</em>, minimum fifty
+        reviews.
       </>
     ),
     query:

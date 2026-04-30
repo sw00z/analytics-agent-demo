@@ -152,11 +152,15 @@ export function MessageActions({
 
       <div
         className="inline-flex items-center gap-1.5"
-        onMouseLeave={() => { if (popOpen) setPopOpen(false); }}
+        onMouseLeave={() => {
+          if (popOpen) setPopOpen(false);
+        }}
         onKeyDown={(e) => {
           if (!popOpen) return;
           const items = Array.from(
-            rowRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [],
+            rowRef.current?.querySelectorAll<HTMLElement>(
+              '[role="menuitem"]',
+            ) ?? [],
           );
           if (e.key === "ArrowDown") {
             e.preventDefault();

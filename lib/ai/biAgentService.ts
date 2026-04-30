@@ -9,7 +9,10 @@
 import { CallbackHandler } from "@langfuse/langchain";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { biAgent } from "./biAgent";
-import { type BIAgentResponse, type ChartConfig } from "./schemas/biAgentResponse";
+import {
+  type BIAgentResponse,
+  type ChartConfig,
+} from "./schemas/biAgentResponse";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -85,8 +88,9 @@ export async function invokeBIAgent(
   );
 
   // structuredResponse is typed by responseFormat (BIResponseSchema)
-  const wrapped = (result as { structuredResponse: { response: BIAgentResponse } })
-    .structuredResponse;
+  const wrapped = (
+    result as { structuredResponse: { response: BIAgentResponse } }
+  ).structuredResponse;
   const biResponse = wrapped.response;
 
   const base: BIAgentServiceResponse = {
@@ -152,16 +156,19 @@ export function extractToolSql(result: unknown): string | undefined {
       _getType?: () => string;
       tool_calls?: Array<{ name?: string; args?: { query?: unknown } }>;
     };
-    const isAi = msg.constructor?.name === "AIMessage" || msg._getType?.() === "ai";
+    const isAi =
+      msg.constructor?.name === "AIMessage" || msg._getType?.() === "ai";
     if (!isAi) continue;
     const calls = msg.tool_calls ?? [];
     for (let j = calls.length - 1; j >= 0; j--) {
       const call = calls[j];
-      if (call?.name === "execute_sql" && typeof call.args?.query === "string") {
+      if (
+        call?.name === "execute_sql" &&
+        typeof call.args?.query === "string"
+      ) {
         return call.args.query;
       }
     }
   }
   return undefined;
 }
-

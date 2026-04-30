@@ -5,7 +5,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --font-serif:
+    "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-mono: var(--font-plex-mono);
   --font-sans: var(--font-serif);
   --font-heading: var(--font-serif);
@@ -86,43 +87,43 @@
   --popover: oklch(0.97 0.005 75);
   --popover-foreground: oklch(0.22 0.005 75);
 
-  --accent: oklch(0.42 0.10 250);
+  --accent: oklch(0.42 0.1 250);
   --accent-strong: oklch(0.36 0.12 250);
-  --accent-soft: oklch(0.42 0.10 250 / 0.12);
+  --accent-soft: oklch(0.42 0.1 250 / 0.12);
   --accent-foreground: oklch(0.97 0.005 75);
 
-  --primary: oklch(0.42 0.10 250);
+  --primary: oklch(0.42 0.1 250);
   --primary-foreground: oklch(0.97 0.005 75);
   --secondary: oklch(0.94 0.005 75);
   --secondary-foreground: oklch(0.22 0.005 75);
   --muted: oklch(0.94 0.005 75);
   --muted-foreground: oklch(0.58 0.005 75);
 
-  --destructive: oklch(0.50 0.18 28);
+  --destructive: oklch(0.5 0.18 28);
 
   --border: oklch(0.22 0.005 75 / 0.16);
   --input: oklch(0.22 0.005 75 / 0.22);
-  --ring: oklch(0.42 0.10 250 / 0.45);
+  --ring: oklch(0.42 0.1 250 / 0.45);
 
   /* Five-step chart palette for cream surface. Series rotate by hue and
      drop in lightness so categorical channels stay distinguishable without
      resorting to a rainbow. Ink-blue carries series 1 (the lone accent);
      ink-warm carries series 2; sienna, ochre, and teal complete the set —
      all at lightness ≤0.55 so each clears 3:1 contrast against cream. */
-  --chart-1: oklch(0.42 0.10 250);
-  --chart-2: oklch(0.32 0.020 75);
+  --chart-1: oklch(0.42 0.1 250);
+  --chart-2: oklch(0.32 0.02 75);
   --chart-3: oklch(0.55 0.13 35);
   --chart-4: oklch(0.62 0.12 75);
-  --chart-5: oklch(0.50 0.08 200);
+  --chart-5: oklch(0.5 0.08 200);
 
   /* Scrollbar palette. Track is a near-transparent ink wash so it reads as a
      soft grey gutter on cream without competing with the page rules. Thumb
      is the brand navy at low alpha — same hue as the Ask button so the
      scrollbar feels native to the accent system, not a separate slate. */
   --scrollbar-track: oklch(0.22 0.005 75 / 0.06);
-  --scrollbar-thumb: oklch(0.42 0.10 250 / 0.32);
-  --scrollbar-thumb-border: oklch(0.42 0.10 250 / 0.20);
-  --scrollbar-thumb-hover: oklch(0.42 0.10 250 / 0.55);
+  --scrollbar-thumb: oklch(0.42 0.1 250 / 0.32);
+  --scrollbar-thumb-border: oklch(0.42 0.1 250 / 0.2);
+  --scrollbar-thumb-hover: oklch(0.42 0.1 250 / 0.55);
 
   --shadow-ink: oklch(0.22 0.005 75 / 0.18);
   --radius: 0.5rem;
@@ -136,8 +137,11 @@
     @apply bg-background text-foreground;
     /* Soft warm-on-warm radial — stays inside the cream register, lifts the
        top of the page without tipping the surface toward decorative. */
-    background-image:
-      radial-gradient(1100px 520px at 50% -8%, oklch(0.99 0.008 75), transparent 65%);
+    background-image: radial-gradient(
+      1100px 520px at 50% -8%,
+      oklch(0.99 0.008 75),
+      transparent 65%
+    );
     background-attachment: fixed;
     font-feature-settings: "kern", "liga", "calt";
   }
@@ -170,8 +174,20 @@
 }
 
 @utility mask-edge-fade-x {
-  mask-image: linear-gradient(to right, transparent, black 18px, black calc(100% - 18px), transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 18px, black calc(100% - 18px), transparent);
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 18px,
+    black calc(100% - 18px),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 18px,
+    black calc(100% - 18px),
+    transparent
+  );
 }
 
 @utility max-h-table {
@@ -287,7 +303,7 @@
   pointer-events: none;
   transition:
     clip-path 260ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity   260ms cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .copy-popup-menu[aria-hidden="false"] {
   clip-path: inset(0 0% 0 0 round 4px);

@@ -71,9 +71,7 @@ export async function updateSessionTitle(
 }
 
 export async function deleteSession(sessionId: number, userId: string) {
-  await db
-    .delete(agentMessages)
-    .where(eq(agentMessages.sessionId, sessionId));
+  await db.delete(agentMessages).where(eq(agentMessages.sessionId, sessionId));
   await db
     .delete(agentSessions)
     .where(

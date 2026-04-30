@@ -114,14 +114,18 @@ async function batchInsert<T extends Record<string, unknown>>(
     const batch = rows.slice(i, i + BATCH_SIZE);
     await insertFn(batch);
     if ((i / BATCH_SIZE) % 10 === 0) {
-      process.stdout.write(`    ${Math.min(i + BATCH_SIZE, rows.length)}/${rows.length}\r`);
+      process.stdout.write(
+        `    ${Math.min(i + BATCH_SIZE, rows.length)}/${rows.length}\r`,
+      );
     }
   }
   console.log(`    ${rows.length}/${rows.length} done`);
 }
 
 async function truncate(name: string) {
-  await dbClient.execute(sql.raw(`TRUNCATE TABLE ${name} RESTART IDENTITY CASCADE`));
+  await dbClient.execute(
+    sql.raw(`TRUNCATE TABLE ${name} RESTART IDENTITY CASCADE`),
+  );
 }
 
 // ---------------------------------------------------------------------------

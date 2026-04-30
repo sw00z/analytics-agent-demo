@@ -25,11 +25,13 @@ export function humanLabelFor(type: ChartConfig["type"]): string {
   }
 }
 
-export function captionFor(type: ChartConfig["type"], rowCount: number): string {
+export function captionFor(
+  type: ChartConfig["type"],
+  rowCount: number,
+): string {
   if (type === "table") return `Showing ${rowCount} rows.`;
   if (type === "pie") return `${rowCount} segments, sized by share.`;
   if (type === "scatter") return `${rowCount} observations.`;
-  if (type === "stacked_bar")
-    return `${rowCount} periods, stacked by series.`;
+  if (type === "stacked_bar") return `${rowCount} periods, stacked by series.`;
   return `${rowCount} ${rowCount === 1 ? "point" : "points"}.`;
 }

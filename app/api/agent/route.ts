@@ -23,11 +23,7 @@ import {
   touchSession,
   getSession,
 } from "@/lib/db/queries";
-import {
-  rateLimit,
-  getClientIp,
-  rateLimitHeaders,
-} from "@/lib/ratelimit";
+import { rateLimit, getClientIp, rateLimitHeaders } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";

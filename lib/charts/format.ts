@@ -29,7 +29,10 @@ export function formatValue(value: unknown, key: string): string {
         maximumFractionDigits: 2,
       }).format(num);
     }
-    if (key.toLowerCase().includes("rate") || key.toLowerCase().includes("pct")) {
+    if (
+      key.toLowerCase().includes("rate") ||
+      key.toLowerCase().includes("pct")
+    ) {
       return `${num.toFixed(1)}%`;
     }
     return new Intl.NumberFormat("en-US").format(num);

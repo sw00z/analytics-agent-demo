@@ -14,7 +14,11 @@ import {
 } from "recharts";
 import type { ChartConfig } from "@/lib/api/agent";
 import { chartHeight, coerceNumeric, formatValue } from "@/lib/charts/format";
-import { CHART_COLORS, TOOLTIP_LABEL_STYLE, TOOLTIP_STYLE } from "./shared/styles";
+import {
+  CHART_COLORS,
+  TOOLTIP_LABEL_STYLE,
+  TOOLTIP_STYLE,
+} from "./shared/styles";
 import { renderPieLabel } from "./shared/PieLabel";
 
 interface Props {

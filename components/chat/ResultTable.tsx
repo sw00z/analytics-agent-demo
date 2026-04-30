@@ -21,7 +21,10 @@ function isNumericLike(value: unknown): boolean {
 function formatCell(value: unknown, key: string): string {
   if (value == null) return "—";
   const k = key.toLowerCase();
-  if (typeof value === "number" || (typeof value === "string" && !isNaN(parseFloat(value)))) {
+  if (
+    typeof value === "number" ||
+    (typeof value === "string" && !isNaN(parseFloat(value)))
+  ) {
     const num = typeof value === "number" ? value : parseFloat(value);
     if (Number.isFinite(num)) {
       if (
