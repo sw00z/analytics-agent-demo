@@ -14,6 +14,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ScrollbarThumb } from "@/components/chat/panel/ScrollbarThumb";
 import {
   listSessions,
   deleteSession,
@@ -46,6 +47,7 @@ export function SessionsDropdown({
 }: Props) {
   const qc = useQueryClient();
   const actionsRef = useRef<MenuPrimitive.Root.Actions>(null);
+  const scrollListRef = useRef<HTMLDivElement>(null);
 
   const { data: sessions = [], isLoading } = useQuery({
     queryKey: ["sessions", userId],
@@ -89,13 +91,13 @@ export function SessionsDropdown({
         align="end"
         sideOffset={8}
         onMouseLeave={() => actionsRef.current?.close()}
-        className="min-w-[300px] max-w-[360px] p-0 rounded-md bg-background ring-1 ring-rule shadow-[0_8px_24px_-4px_var(--shadow-ink)]"
+        className="min-w-[300px] max-w-[360px] p-0 rounded-md overflow-hidden bg-background ring-1 ring-rule shadow-[0_8px_24px_-4px_var(--shadow-ink)]"
       >
         <button
           type="button"
           onClick={() => onSelect(null)}
           className={cn(
-            "flex items-center gap-2 w-full text-left px-4 py-3",
+            "flex items-center gap-2 w-full text-left px-4 py-3 cursor-pointer",
             "border-b border-rule",
             "font-serif italic text-[14px] text-ink-2",
             "hover:text-accent-strong hover:bg-surface-2 transition-colors",
@@ -106,26 +108,32 @@ export function SessionsDropdown({
           New conversation
         </button>
 
-        <div className="max-h-[320px] overflow-y-auto">
-          {isLoading && (
-            <div className="px-4 py-3 font-serif italic text-[13.5px] text-ink-mute">
-              Loading…
-            </div>
-          )}
-          {!isLoading && sessions.length === 0 && (
-            <div className="px-4 py-3 font-serif italic text-[13.5px] text-ink-mute">
-              No conversations yet.
-            </div>
-          )}
-          {sessions.map((s) => (
-            <SessionRow
-              key={s.id}
-              session={s}
-              active={s.id === currentSessionId}
-              onSelect={() => onSelect(s.id)}
-              onDelete={() => deleteMutation.mutate(s.id)}
-            />
-          ))}
+        <div className="relative">
+          <div
+            ref={scrollListRef}
+            className="max-h-[320px] overflow-y-auto scrollbar-none"
+          >
+            {isLoading && (
+              <div className="px-4 py-3 font-serif italic text-[13.5px] text-ink-mute">
+                Loading…
+              </div>
+            )}
+            {!isLoading && sessions.length === 0 && (
+              <div className="px-4 py-3 font-serif italic text-[13.5px] text-ink-mute">
+                No conversations yet.
+              </div>
+            )}
+            {sessions.map((s) => (
+              <SessionRow
+                key={s.id}
+                session={s}
+                active={s.id === currentSessionId}
+                onSelect={() => onSelect(s.id)}
+                onDelete={() => deleteMutation.mutate(s.id)}
+              />
+            ))}
+          </div>
+          <ScrollbarThumb scrollRef={scrollListRef} variant="edge" />
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -188,7 +196,7 @@ function SessionRow({
         }}
         aria-label={`Delete conversation: ${session.title}`}
         className={cn(
-          "relative shrink-0 grid place-items-center size-6 rounded",
+          "relative shrink-0 grid place-items-center size-6 rounded cursor-pointer",
           "text-ink-mute hover:text-destructive",
           "opacity-0 group-hover/row:opacity-100 focus:opacity-100",
           "transition-opacity",
