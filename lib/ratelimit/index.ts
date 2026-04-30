@@ -1,27 +1,32 @@
 // Per-IP rate limiter for the public demo.
 //
-// Production (Vercel): @upstash/redis sorted set, durable across instances.
+// Production (Vercel): @upstash/ratelimit sliding window, durable across
+// instances. Single Lua-evaluated round-trip per check, with an in-process
+// ephemeralCache so repeated calls from the same IP within one Node process
+// skip Redis entirely.
+//
 // Local dev: in-memory Map. Per-instance, resets on cold start — fine for
 // `pnpm dev`, NOT a real cost guardrail in prod.
 //
 // The OpenAI dashboard's monthly spend cap is the actual safety net;
 // this limiter is convenience to slow down honest abusers.
 
+import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 const WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const LIMIT = Number(process.env.RATE_LIMIT_PER_HOUR ?? "35");
 
-let redis: Redis | null = null;
-if (
-  process.env.UPSTASH_REDIS_REST_URL &&
-  process.env.UPSTASH_REDIS_REST_TOKEN
-) {
-  redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN,
-  });
-}
+const redisLimiter =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+    ? new Ratelimit({
+        redis: Redis.fromEnv(),
+        limiter: Ratelimit.slidingWindow(LIMIT, "1 h"),
+        analytics: true,
+        prefix: "rl",
+        ephemeralCache: new Map(),
+      })
+    : null;
 
 const memoryStore = new Map<string, number[]>();
 
@@ -33,47 +38,19 @@ export interface RateLimitResult {
 }
 
 export async function rateLimit(ip: string): Promise<RateLimitResult> {
-  const now = Date.now();
-  const cutoff = now - WINDOW_MS;
-  const key = `rl:${ip}`;
-
-  if (redis) {
-    // Sorted set scored by timestamp.
-    await redis.zremrangebyscore(key, 0, cutoff);
-    const count = (await redis.zcard(key)) ?? 0;
-
-    if (count >= LIMIT) {
-      const oldestEntries = (await redis.zrange(key, 0, 0, {
-        withScores: true,
-      })) as [string, number] | string[];
-      const oldestScore = Array.isArray(oldestEntries)
-        ? typeof oldestEntries[1] === "number"
-          ? oldestEntries[1]
-          : now
-        : now;
-      return {
-        allowed: false,
-        remaining: 0,
-        resetAt: new Date(oldestScore + WINDOW_MS),
-        limit: LIMIT,
-      };
-    }
-
-    await redis.zadd(key, {
-      score: now,
-      member: `${now}-${Math.random().toString(36).slice(2)}`,
-    });
-    await redis.expire(key, Math.ceil(WINDOW_MS / 1000));
-
+  if (redisLimiter) {
+    const r = await redisLimiter.limit(ip);
     return {
-      allowed: true,
-      remaining: LIMIT - count - 1,
-      resetAt: new Date(now + WINDOW_MS),
-      limit: LIMIT,
+      allowed: r.success,
+      remaining: r.remaining,
+      resetAt: new Date(r.reset),
+      limit: r.limit,
     };
   }
 
-  // In-memory fallback
+  // In-memory fallback: sliding window over an array of timestamps.
+  const now = Date.now();
+  const cutoff = now - WINDOW_MS;
   const timestamps = memoryStore.get(ip) ?? [];
   const recent = timestamps.filter((t) => t > cutoff);
 
