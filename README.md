@@ -2,7 +2,7 @@
 
 A natural-language BI chat agent that answers questions about a real e-commerce dataset by generating SQL, running it through a four-layer safety filter, and rendering the result as a chart, table, or conversational reply.
 
-> **Live demo:** _coming soon_ — see [Deployment](#deployment) below.
+> **Live demo:**    https://analytics-agent-demo.vercel.app
 
 ```
 You ask                                The agent does
