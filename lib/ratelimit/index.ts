@@ -1,12 +1,17 @@
 // Per-IP rate limiter for the public demo.
 //
-// Production (Vercel): @upstash/ratelimit sliding window, durable across
-// instances. Single Lua-evaluated round-trip per check, with an in-process
-// ephemeralCache so repeated calls from the same IP within one Node process
-// skip Redis entirely.
+// Gated on `process.env.NODE_ENV`:
+//   - production (pnpm start, Vercel deploy): @upstash/ratelimit sliding
+//     window backed by Upstash Redis. Durable across instances, single
+//     Lua-evaluated round-trip per check, in-process ephemeralCache for hot
+//     identifiers. Requires UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
+//     — fails loud at module init if missing.
+//   - anything else (pnpm dev, pnpm test, ad-hoc scripts): in-memory Map.
+//     Per-instance, resets on cold start. Convenient for local dev, NOT a
+//     real cost guardrail.
 //
-// Local dev: in-memory Map. Per-instance, resets on cold start — fine for
-// `pnpm dev`, NOT a real cost guardrail in prod.
+// Next.js sets NODE_ENV automatically (router-server bootstrap), and Vercel
+// sets it on every deploy, so no script or env-var wiring is needed.
 //
 // The OpenAI dashboard's monthly spend cap is the actual safety net;
 // this limiter is convenience to slow down honest abusers.
@@ -18,7 +23,7 @@ const WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const LIMIT = Number(process.env.RATE_LIMIT_PER_HOUR ?? "35");
 
 const redisLimiter =
-  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
+  process.env.NODE_ENV === "production"
     ? new Ratelimit({
         redis: Redis.fromEnv(),
         limiter: Ratelimit.slidingWindow(LIMIT, "1 h"),
