@@ -5,6 +5,12 @@
 // is the visual focal point — borderless, italic serif, growing up to
 // 160px before scrolling internally. Submit on Enter; Shift+Enter for
 // newline.
+//
+// While a request is in flight, the Ask button is replaced with a Stop
+// button so the user can abort instead of being trapped waiting. Stop
+// reuses the same pill geometry as Ask so the slot doesn't visually
+// shift; the destructive tint signals the action's nature without
+// flooding the surface.
 
 import { AlertCircle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +21,7 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  onCancel: () => void;
   isPending: boolean;
   retryAfter: number | null;
   followUps: string[];
@@ -25,16 +32,19 @@ export function ChatInput({
   value,
   onChange,
   onSubmit,
+  onCancel,
   isPending,
   retryAfter,
   followUps,
   onSelectFollowUp,
 }: Props) {
-  const canSend = value.trim().length > 0 && !isPending;
+  const isRateLimited = retryAfter !== null && retryAfter > 0;
+  const canSend = value.trim().length > 0 && !isPending && !isRateLimited;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      if (isPending) return;
       onSubmit();
     }
   };
@@ -42,7 +52,7 @@ export function ChatInput({
   return (
     <div className="shrink-0 border-t border-rule px-6 sm:px-14 pt-2 pb-3 bg-background">
       <div className="mx-auto w-full max-w-[60rem] flex flex-col gap-2">
-        {retryAfter !== null && (
+        {isRateLimited && (
           <div
             role="status"
             aria-live="polite"
@@ -61,6 +71,7 @@ export function ChatInput({
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            if (isPending) return;
             onSubmit();
           }}
           className={cn(
@@ -85,24 +96,42 @@ export function ChatInput({
             )}
             autoFocus
           />
-          <button
-            type="submit"
-            disabled={!canSend}
-            aria-label="Send message"
-            className={cn(
-              "shrink-0 rounded-full px-3.5 py-1.5 cursor-pointer",
-              "font-mono text-[11px] font-medium uppercase tracking-[0.14em]",
-              "border border-accent bg-accent-soft text-accent-strong",
-              "hover:bg-accent hover:text-accent-foreground",
-              "transition-colors duration-150",
-              "disabled:pointer-events-none disabled:opacity-40",
-            )}
-          >
-            Ask
-          </button>
+          {isPending ? (
+            <button
+              type="button"
+              onClick={onCancel}
+              aria-label="Stop generation"
+              className={cn(
+                "shrink-0 rounded-full px-3.5 py-1.5 cursor-pointer",
+                "font-mono text-[11px] font-medium uppercase tracking-[0.14em]",
+                "border border-destructive/30 bg-destructive/5 text-destructive",
+                "hover:bg-destructive/15 hover:border-destructive/55",
+                "transition-colors duration-150",
+              )}
+            >
+              Stop
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={!canSend}
+              aria-label="Send message"
+              className={cn(
+                "shrink-0 rounded-full px-3.5 py-1.5 cursor-pointer",
+                "font-mono text-[11px] font-medium uppercase tracking-[0.14em]",
+                "border border-accent bg-accent-soft text-accent-strong",
+                "hover:bg-accent hover:text-accent-foreground",
+                "transition-colors duration-150",
+                "disabled:pointer-events-none disabled:opacity-40",
+              )}
+            >
+              Ask
+            </button>
+          )}
         </form>
         <p className="font-mono text-[10px] uppercase tracking-[0.10em] text-ink-mute text-center">
-          Enter to ask <span className="lowercase">·</span> Shift+Enter for newline <span className="lowercase">·</span> read-only via gpt-4o
+          Enter to ask <span className="lowercase">·</span> Shift+Enter for
+          newline <span className="lowercase">·</span> read-only via gpt-4o
         </p>
       </div>
     </div>

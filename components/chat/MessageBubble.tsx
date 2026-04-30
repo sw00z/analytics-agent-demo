@@ -31,6 +31,12 @@ export interface DisplayMessage {
   /** SQL the agent generated. Rendered as a collapsible block beneath the
    *  prose answer when present on assistant turns. */
   sql?: string;
+  /** Discriminator on error turns: `rate_limit` is its own affordance (the
+   *  banner countdown above the composer), so no Try-again link is rendered;
+   *  `agent_error` covers network and agent failures; `aborted` is the soft
+   *  "Stopped." bubble pushed when the user clicks Stop. The latter two
+   *  carry the retry link when this message is the latest in the list. */
+  errorKind?: "rate_limit" | "agent_error" | "aborted";
 }
 
 interface Props {
@@ -44,9 +50,22 @@ interface Props {
    *  height so the corresponding user question can anchor to the top of the
    *  viewport without leaving a static viewport-sized gap below the answer. */
   isLastAssistant?: boolean;
+  /** Wired by MessageList to exactly one message per failure state:
+   *  - `aborted` error → the user bubble above (user owns the cancel)
+   *  - `agent_error` error → the error bubble itself (system owns the failure)
+   *  - rate_limit / success / placeholder → no retry surface
+   *  With an `override` arg, resubmits that text directly (used by the
+   *  user-bubble path so the retry reflects the clicked bubble); without,
+   *  falls back to the hook's lastQueryRef. */
+  onRetry?: (override?: string) => void;
 }
 
-export function MessageBubble({ message, onFeedback, isLastAssistant }: Props) {
+export function MessageBubble({
+  message,
+  onFeedback,
+  isLastAssistant,
+  onRetry,
+}: Props) {
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [pendingRating, setPendingRating] = useState<
     "positive" | "negative" | null
@@ -57,11 +76,24 @@ export function MessageBubble({ message, onFeedback, isLastAssistant }: Props) {
   const [submitting, setSubmitting] = useState(false);
 
   if (message.role === "user") {
-    return <UserBubble id={message.id} content={message.content} />;
+    return (
+      <UserBubble
+        id={message.id}
+        content={message.content}
+        onRetry={onRetry ? () => onRetry(message.content) : undefined}
+      />
+    );
   }
 
   if (message.role === "error") {
-    return <ErrorBubble content={message.content} />;
+    const renderRetryHere = message.errorKind === "agent_error";
+    return (
+      <ErrorBubble
+        content={message.content}
+        errorKind={message.errorKind}
+        onRetry={renderRetryHere && onRetry ? () => onRetry() : undefined}
+      />
+    );
   }
 
   // Assistant turn — no card, no border, no background. Just an "Answer."

@@ -6,12 +6,13 @@
 //   - the current sessionId
 //   - the user input
 //   - hydration from /api/agent/sessions/:id when a session is selected
+//   - the 429 retry-after countdown (decrements per second, clears at 0)
 //
 // Writes flow through TanStack Query mutations (sendQuery, submitFeedback)
 // inside the dedicated hooks below; cache invalidation handles dropdown
 // updates.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSessionMessages } from "@/lib/hooks/useSessionMessages";
 import { useChatScroll } from "@/lib/hooks/useChatScroll";
 import { useChatStreaming } from "@/lib/hooks/useChatStreaming";
@@ -27,10 +28,33 @@ interface Props {
   onSessionChange: (id: number) => void;
 }
 
-export function ChatPanel({ userId, currentSessionId, onSessionChange }: Props) {
-  const { messages, setMessages } = useSessionMessages(userId, currentSessionId);
+export function ChatPanel({
+  userId,
+  currentSessionId,
+  onSessionChange,
+}: Props) {
+  const { messages, setMessages } = useSessionMessages(
+    userId,
+    currentSessionId,
+  );
   const [input, setInput] = useState("");
   const [retryAfter, setRetryAfter] = useState<number | null>(null);
+
+  // Decrement the rate-limit countdown locally so the banner stays accurate
+  // without a server round-trip per second. The functional updater clears
+  // to null when prev hits 1, which both ends the countdown and re-enables
+  // the composer; the 0-or-below path drains immediately. Routing both
+  // through setTimeout keeps the effect lint-clean (no synchronous setState
+  // in the effect body, which would cascade renders).
+  useEffect(() => {
+    if (retryAfter === null) return;
+    const t = setTimeout(
+      () =>
+        setRetryAfter((prev) => (prev === null || prev <= 1 ? null : prev - 1)),
+      retryAfter > 0 ? 1000 : 0,
+    );
+    return () => clearTimeout(t);
+  }, [retryAfter]);
 
   // Anchor each new question to the top of the scroll viewport. The
   // accompanying assistant turn carries a min-h that reserves the trailing
@@ -51,7 +75,7 @@ export function ChatPanel({ userId, currentSessionId, onSessionChange }: Props) 
 
   const { scrollRef } = useChatScroll(lastUserMsgId);
 
-  const { send, isPending } = useChatStreaming({
+  const { send, cancel, retry, isPending } = useChatStreaming({
     userId,
     currentSessionId,
     setMessages,
@@ -99,6 +123,7 @@ export function ChatPanel({ userId, currentSessionId, onSessionChange }: Props) 
               messages={messages}
               lastAssistantId={lastAssistantId}
               onFeedback={currentSessionId ? handleFeedback : undefined}
+              onRetry={retry}
             />
           )}
         </div>
@@ -109,6 +134,7 @@ export function ChatPanel({ userId, currentSessionId, onSessionChange }: Props) 
         value={input}
         onChange={setInput}
         onSubmit={submit}
+        onCancel={cancel}
         isPending={isPending}
         retryAfter={retryAfter}
         followUps={latestFollowUps}
