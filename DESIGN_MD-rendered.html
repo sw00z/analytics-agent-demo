@@ -1,0 +1,2083 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Analytics Agent — Design Tokens</title>
+    <style>
+      /* ═══════════════════════════════════════════════════════════════
+         TOKENS · sourced from DESIGN.md
+         Two tiers: primitives (--colors-*, --type-*, --rounded-*) and
+         component aliases that compose them (--btn-ask-bg, etc.).
+         ═══════════════════════════════════════════════════════════════ */
+      :root {
+        /* — Color · Neutral — */
+        --warm-ash-cream: oklch(0.97 0.005 75);
+        --warm-ash-cream-2: oklch(0.94 0.005 75);
+        --editors-ink: oklch(0.22 0.005 75);
+        --editors-ink-2: oklch(0.42 0.005 75);
+        --margin-pencil: oklch(0.58 0.005 75);
+        --hairline-rule: oklch(0.22 0.005 75 / 0.16);
+        --hairline-rule-strong: oklch(0.22 0.005 75 / 0.36);
+
+        /* — Color · Primary (the single voice) — */
+        --ink-blue-stamp: oklch(0.42 0.1 250);
+        --ink-blue-stamp-deep: oklch(0.36 0.12 250);
+        --ink-blue-stamp-soft: oklch(0.42 0.1 250 / 0.12);
+
+        /* — Color · Secondary (destructive ink) — */
+        --printers-mark-red: oklch(0.5 0.18 28);
+
+        /* — Color · Tertiary (chart palette · series 2–5) — */
+        --composing-stick: oklch(0.32 0.02 75);
+        --letterpress-sienna: oklch(0.55 0.13 35);
+        --folio-ochre: oklch(0.62 0.12 75);
+        --compositor-teal: oklch(0.5 0.08 200);
+
+        /* — Type · Families — */
+        --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+        --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+        /* — Type · Roles — */
+        --type-display-size: clamp(2.375rem, 4vw, 2.625rem);
+        --type-display-weight: 500;
+        --type-display-lh: 1.1;
+        --type-display-tracking: -0.01em;
+
+        --type-headline-size: 1.4375rem;
+        --type-headline-weight: 400;
+        --type-headline-lh: 1.2;
+
+        --type-title-size: 1.25rem;
+        --type-title-weight: 400;
+        --type-title-lh: 1.2;
+
+        --type-body-size: 1.0625rem;
+        --type-body-weight: 400;
+        --type-body-lh: 1.62;
+
+        --type-label-size: 0.6875rem;
+        --type-label-weight: 500;
+        --type-label-lh: 1;
+        --type-label-tracking: 0.14em;
+
+        --type-mono-data-size: 0.78125rem;
+        --type-mono-data-weight: 400;
+        --type-mono-data-lh: 1.65;
+
+        /* — Radii — */
+        --rounded-sm: 0.3rem;
+        --rounded-md: 0.4rem;
+        --rounded-lg: 0.5rem;
+        --rounded-xl: 0.7rem;
+        --rounded-full: 9999px;
+
+        /* — Shadow vocabulary (popup-only, per DESIGN.md §4) — */
+        --shadow-popup: 0 8px 24px -4px oklch(0.22 0.005 75 / 0.18);
+
+        /* — Component aliases — */
+        --btn-ask-bg: var(--ink-blue-stamp-soft);
+        --btn-ask-text: var(--ink-blue-stamp-deep);
+        --btn-ask-bg-hover: var(--ink-blue-stamp);
+        --btn-ask-text-hover: var(--warm-ash-cream);
+
+        --btn-stop-bg: oklch(0.5 0.18 28 / 0.05);
+        --btn-stop-text: var(--printers-mark-red);
+
+        --card-bg: var(--warm-ash-cream);
+        --sql-bg: var(--warm-ash-cream-2);
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         BASE · the editorial paper register
+         ═══════════════════════════════════════════════════════════════ */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        background: var(--warm-ash-cream);
+      }
+
+      body {
+        margin: 0;
+        background: var(--warm-ash-cream);
+        background-image: radial-gradient(
+          1100px 520px at 50% -8%,
+          oklch(0.99 0.008 75),
+          transparent 65%
+        );
+        color: var(--editors-ink);
+        font-family: var(--font-serif);
+        font-size: var(--type-body-size);
+        line-height: var(--type-body-lh);
+        font-feature-settings: "kern", "liga", "calt";
+        -webkit-font-smoothing: antialiased;
+      }
+
+      em {
+        font-style: italic;
+        color: var(--ink-blue-stamp-deep);
+      }
+
+      code {
+        font-family: var(--font-mono);
+        font-size: 0.78125rem;
+        color: var(--editors-ink);
+      }
+
+      a {
+        color: var(--ink-blue-stamp-deep);
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         LAYOUT
+         ═══════════════════════════════════════════════════════════════ */
+      .page {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+
+      @media (min-width: 640px) {
+        .page {
+          padding: 0 3.5rem;
+        }
+      }
+
+      .reading-column {
+        max-width: 60ch;
+        font-family: var(--font-serif);
+        font-size: var(--type-body-size);
+        line-height: var(--type-body-lh);
+        color: var(--editors-ink);
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         MASTHEAD
+         ═══════════════════════════════════════════════════════════════ */
+      .masthead {
+        height: 70px;
+        border-bottom: 1px solid var(--hairline-rule);
+        display: flex;
+        align-items: center;
+      }
+
+      .masthead__inner {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+      }
+
+      @media (min-width: 640px) {
+        .masthead__inner {
+          padding: 0 3.5rem;
+        }
+      }
+
+      .mark {
+        width: 9px;
+        height: 9px;
+        background: var(--ink-blue-stamp);
+        border-radius: 1px;
+        transform: translateY(-1px);
+      }
+
+      .wordmark {
+        font-family: var(--font-serif);
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: var(--editors-ink);
+      }
+
+      .tagline {
+        margin-left: 8px;
+        padding-left: 12px;
+        border-left: 1px solid var(--hairline-rule);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--margin-pencil);
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         KICKERS (the mono small-caps openers)
+         Spec: 11px / 0.14em / one-period terminator
+         ═══════════════════════════════════════════════════════════════ */
+      .kicker {
+        font-family: var(--font-mono);
+        font-size: var(--type-label-size);
+        font-weight: var(--type-label-weight);
+        line-height: var(--type-label-lh);
+        letter-spacing: var(--type-label-tracking);
+        color: var(--margin-pencil);
+        text-transform: none;
+      }
+      .kicker--accent {
+        color: var(--ink-blue-stamp-deep);
+      }
+      .kicker--destructive {
+        color: var(--printers-mark-red);
+      }
+      .kicker--uppercase {
+        font-size: 10.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         SECTIONS (hairline-divided, no shadow)
+         ═══════════════════════════════════════════════════════════════ */
+      .section {
+        border-top: 1px solid var(--hairline-rule);
+        padding: 56px 0 64px;
+      }
+
+      .section__header {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 28px;
+      }
+
+      .section__lede {
+        max-width: 60ch;
+        font-family: var(--font-serif);
+        font-size: var(--type-body-size);
+        line-height: var(--type-body-lh);
+        color: var(--editors-ink-2);
+        margin: 0 0 24px;
+      }
+
+      .display {
+        font-family: var(--font-serif);
+        font-size: var(--type-display-size);
+        font-weight: var(--type-display-weight);
+        line-height: var(--type-display-lh);
+        letter-spacing: var(--type-display-tracking);
+        color: var(--editors-ink);
+        max-width: 18ch;
+        margin: 0;
+      }
+
+      .headline {
+        font-family: var(--font-serif);
+        font-size: var(--type-headline-size);
+        font-weight: var(--type-headline-weight);
+        line-height: var(--type-headline-lh);
+        color: var(--editors-ink);
+        margin: 0;
+      }
+
+      .title {
+        font-family: var(--font-serif);
+        font-size: var(--type-title-size);
+        font-weight: var(--type-title-weight);
+        line-height: var(--type-title-lh);
+        color: var(--editors-ink);
+        margin: 0;
+      }
+
+      .subtitle {
+        font-family: var(--font-serif);
+        font-size: 1.0625rem;
+        font-weight: 600;
+        line-height: 1.3;
+        color: var(--editors-ink);
+        margin: 32px 0 14px;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         HERO
+         ═══════════════════════════════════════════════════════════════ */
+      .hero {
+        padding: 80px 0 48px;
+      }
+
+      .hero__kicker {
+        margin-bottom: 18px;
+      }
+
+      .hero__lede {
+        margin: 24px 0 0;
+        max-width: 56ch;
+        font-style: italic;
+        color: var(--editors-ink-2);
+        font-size: 1.125rem;
+        line-height: 1.55;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         SWATCHES
+         A hairline-bordered grid. Each swatch is a chip + meta block,
+         no shadow, no rounded > 4px.
+         ═══════════════════════════════════════════════════════════════ */
+      .swatch-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+        gap: 0;
+        border-top: 1px solid var(--hairline-rule);
+        border-left: 1px solid var(--hairline-rule);
+      }
+
+      .swatch {
+        border-right: 1px solid var(--hairline-rule);
+        border-bottom: 1px solid var(--hairline-rule);
+        display: flex;
+        flex-direction: column;
+        background: var(--warm-ash-cream);
+      }
+
+      .swatch__chip {
+        height: 96px;
+        position: relative;
+      }
+
+      .swatch__chip--checker {
+        background-image:
+          linear-gradient(
+            45deg,
+            var(--warm-ash-cream-2) 25%,
+            transparent 25%
+          ),
+          linear-gradient(
+            -45deg,
+            var(--warm-ash-cream-2) 25%,
+            transparent 25%
+          ),
+          linear-gradient(
+            45deg,
+            transparent 75%,
+            var(--warm-ash-cream-2) 75%
+          ),
+          linear-gradient(
+            -45deg,
+            transparent 75%,
+            var(--warm-ash-cream-2) 75%
+          );
+        background-size: 16px 16px;
+        background-position:
+          0 0,
+          0 8px,
+          8px -8px,
+          -8px 0;
+      }
+
+      .swatch__chip-fill {
+        position: absolute;
+        inset: 0;
+      }
+
+      .swatch__meta {
+        padding: 14px 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .swatch__name {
+        font-family: var(--font-serif);
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--editors-ink);
+      }
+
+      .swatch__value,
+      .swatch__var {
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        line-height: 1.4;
+        color: var(--editors-ink-2);
+      }
+      .swatch__var {
+        color: var(--ink-blue-stamp-deep);
+      }
+
+      .swatch__use {
+        margin: 6px 0 0;
+        font-family: var(--font-serif);
+        font-style: italic;
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: var(--margin-pencil);
+        max-width: 38ch;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         TYPE SPECIMENS
+         Two-column rhythm: spec on the left, live example on the right.
+         ═══════════════════════════════════════════════════════════════ */
+      .specimen {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 28px 0;
+        border-bottom: 1px solid var(--hairline-rule);
+      }
+
+      @media (min-width: 768px) {
+        .specimen {
+          grid-template-columns: 280px 1fr;
+          gap: 40px;
+        }
+      }
+
+      .specimen:first-of-type {
+        border-top: 1px solid var(--hairline-rule);
+      }
+
+      .specimen__spec {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .specimen__spec dl {
+        margin: 8px 0 0;
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 4px 16px;
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+      }
+
+      .specimen__spec dt {
+        color: var(--margin-pencil);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .specimen__spec dd {
+        margin: 0;
+        color: var(--editors-ink);
+      }
+
+      .specimen__purpose {
+        margin: 14px 0 0;
+        font-family: var(--font-serif);
+        font-style: italic;
+        font-size: 13.5px;
+        line-height: 1.5;
+        color: var(--margin-pencil);
+        max-width: 42ch;
+      }
+
+      .specimen__example {
+        align-self: center;
+      }
+
+      /* type-role utility classes (for the live examples) */
+      .t-display {
+        font-family: var(--font-serif);
+        font-size: var(--type-display-size);
+        font-weight: var(--type-display-weight);
+        line-height: var(--type-display-lh);
+        letter-spacing: var(--type-display-tracking);
+        color: var(--editors-ink);
+        max-width: 18ch;
+        margin: 0;
+      }
+      .t-headline {
+        font-family: var(--font-serif);
+        font-size: var(--type-headline-size);
+        font-weight: var(--type-headline-weight);
+        line-height: var(--type-headline-lh);
+        color: var(--editors-ink);
+        margin: 0;
+      }
+      .t-title {
+        font-family: var(--font-serif);
+        font-size: var(--type-title-size);
+        font-weight: var(--type-title-weight);
+        line-height: var(--type-title-lh);
+        color: var(--editors-ink);
+        margin: 0;
+      }
+      .t-body {
+        font-family: var(--font-serif);
+        font-size: var(--type-body-size);
+        font-weight: var(--type-body-weight);
+        line-height: var(--type-body-lh);
+        color: var(--editors-ink);
+        max-width: 60ch;
+        margin: 0;
+      }
+      .t-body-italic {
+        font-style: italic;
+        color: var(--editors-ink-2);
+      }
+      .t-label {
+        font-family: var(--font-mono);
+        font-size: var(--type-label-size);
+        font-weight: var(--type-label-weight);
+        line-height: var(--type-label-lh);
+        letter-spacing: var(--type-label-tracking);
+        color: var(--margin-pencil);
+      }
+      .t-mono-data {
+        font-family: var(--font-mono);
+        font-size: var(--type-mono-data-size);
+        font-weight: var(--type-mono-data-weight);
+        line-height: var(--type-mono-data-lh);
+        color: var(--editors-ink);
+        font-feature-settings: "tnum";
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         RADII
+         ═══════════════════════════════════════════════════════════════ */
+      .radii-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 18px;
+      }
+
+      .radius-sample {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 18px 0;
+      }
+
+      .radius-sample__shape {
+        width: 84px;
+        height: 84px;
+        background: var(--warm-ash-cream-2);
+        border: 1px solid var(--hairline-rule);
+      }
+
+      .radius-sample__caption {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         COMPONENT RECIPES
+         Live demo + token table.
+         ═══════════════════════════════════════════════════════════════ */
+      .recipe {
+        padding: 28px 0;
+        border-bottom: 1px solid var(--hairline-rule);
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 22px;
+      }
+      .recipe:first-of-type {
+        border-top: 1px solid var(--hairline-rule);
+      }
+
+      @media (min-width: 768px) {
+        .recipe {
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
+        }
+      }
+
+      .recipe__header {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        grid-column: 1 / -1;
+      }
+
+      .recipe__name {
+        font-family: var(--font-serif);
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--editors-ink);
+      }
+
+      .recipe__demo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--warm-ash-cream-2);
+        border: 1px solid var(--hairline-rule);
+        padding: 36px 18px;
+        min-height: 120px;
+      }
+
+      .recipe__tokens {
+        margin: 0;
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 6px 16px;
+        font-family: var(--font-mono);
+        font-size: 11.5px;
+        align-content: start;
+      }
+      .recipe__tokens dt {
+        color: var(--margin-pencil);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .recipe__tokens dd {
+        margin: 0;
+        color: var(--editors-ink);
+      }
+      .recipe__tokens dd code {
+        color: var(--ink-blue-stamp-deep);
+      }
+
+      /* — actual component implementations — */
+
+      .ds-ask-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--ink-blue-stamp);
+        background: var(--btn-ask-bg);
+        color: var(--btn-ask-text);
+        border-radius: var(--rounded-full);
+        padding: 6px 14px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
+          color 150ms cubic-bezier(0.23, 1, 0.32, 1);
+      }
+      .ds-ask-pill:hover {
+        background: var(--btn-ask-bg-hover);
+        color: var(--btn-ask-text-hover);
+      }
+
+      .ds-stop-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid oklch(0.5 0.18 28 / 0.3);
+        background: var(--btn-stop-bg);
+        color: var(--btn-stop-text);
+        border-radius: var(--rounded-full);
+        padding: 6px 14px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
+      .ds-btn-primary {
+        height: 32px;
+        padding: 0 10px;
+        background: var(--ink-blue-stamp);
+        color: var(--warm-ash-cream);
+        border: 1px solid var(--ink-blue-stamp);
+        border-radius: var(--rounded-lg);
+        font-family: var(--font-serif);
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .ds-btn-outline {
+        height: 32px;
+        padding: 0 10px;
+        background: transparent;
+        color: var(--editors-ink);
+        border: 1px solid var(--hairline-rule-strong);
+        border-radius: var(--rounded-lg);
+        font-family: var(--font-serif);
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .ds-btn-ghost {
+        height: 32px;
+        padding: 0 10px;
+        background: transparent;
+        color: var(--editors-ink);
+        border: 0;
+        border-radius: var(--rounded-lg);
+        font-family: var(--font-serif);
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .ds-btn-ghost:hover {
+        background: var(--warm-ash-cream-2);
+      }
+
+      .ds-input {
+        height: 32px;
+        padding: 4px 10px;
+        background: transparent;
+        color: var(--editors-ink);
+        border: 1px solid var(--hairline-rule-strong);
+        border-radius: var(--rounded-lg);
+        font-family: var(--font-serif);
+        font-size: 14px;
+        outline: none;
+        width: 100%;
+        max-width: 280px;
+      }
+      .ds-input:focus {
+        border-color: var(--ink-blue-stamp);
+        box-shadow: 0 0 0 2px oklch(0.42 0.1 250 / 0.1);
+      }
+
+      .ds-card {
+        background: var(--warm-ash-cream);
+        color: var(--editors-ink);
+        border: 1px solid var(--hairline-rule);
+        border-radius: var(--rounded-xl);
+        padding: 16px;
+        max-width: 280px;
+      }
+
+      .ds-composer {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 4px;
+        border: 1px solid var(--hairline-rule);
+        border-radius: var(--rounded-sm);
+        background: var(--warm-ash-cream);
+        width: 100%;
+        max-width: 360px;
+      }
+      .ds-composer__textarea {
+        flex: 1;
+        border: 0;
+        background: transparent;
+        outline: none;
+        resize: none;
+        padding: 0 8px;
+        font-family: var(--font-serif);
+        font-style: italic;
+        font-size: 17px;
+        line-height: 1.5;
+        color: var(--editors-ink);
+      }
+      .ds-composer__textarea::placeholder {
+        color: var(--margin-pencil);
+        font-style: italic;
+      }
+
+      .ds-sql-pre {
+        margin: 0;
+        padding: 12px 14px;
+        background: var(--sql-bg);
+        color: var(--editors-ink);
+        border: 1px solid var(--hairline-rule);
+        border-radius: var(--rounded-md);
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        line-height: 1.65;
+        overflow-x: auto;
+        max-width: 100%;
+      }
+
+      .ds-user-bubble {
+        border-left: 2px solid var(--ink-blue-stamp);
+        background: oklch(0.62 0.12 75 / 0.09);
+        padding: 9px 14px 9px 16px;
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+        max-width: 56ch;
+      }
+      .ds-user-bubble__kicker {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1;
+        letter-spacing: 0.14em;
+        color: var(--ink-blue-stamp-deep);
+        margin-bottom: 4px;
+      }
+      .ds-user-bubble__body {
+        font-family: var(--font-serif);
+        font-style: italic;
+        font-size: 18px;
+        line-height: 1.5;
+        color: var(--editors-ink-2);
+        margin: 0;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         SHADOW SAMPLES
+         ═══════════════════════════════════════════════════════════════ */
+      .shadow-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 24px;
+        padding: 24px 0;
+      }
+      .shadow-sample {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      .shadow-sample__plate {
+        width: 100%;
+        height: 100px;
+        background: var(--warm-ash-cream);
+        border: 1px solid var(--hairline-rule);
+        border-radius: var(--rounded-md);
+      }
+      .shadow-sample__plate--popup {
+        box-shadow: var(--shadow-popup);
+      }
+      .shadow-sample__plate--md {
+        box-shadow:
+          0 4px 6px -1px oklch(0.22 0.005 75 / 0.1),
+          0 2px 4px -2px oklch(0.22 0.005 75 / 0.1);
+      }
+      .shadow-sample__plate--lg {
+        box-shadow:
+          0 10px 15px -3px oklch(0.22 0.005 75 / 0.1),
+          0 4px 6px -4px oklch(0.22 0.005 75 / 0.1);
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         RULES (named contracts the system enforces)
+         ═══════════════════════════════════════════════════════════════ */
+      .rules {
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 22px;
+      }
+      .rule {
+        padding-left: 18px;
+        border-left: 1px solid var(--hairline-rule);
+      }
+      .rule__name {
+        font-family: var(--font-serif);
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--editors-ink);
+        margin: 0 0 4px;
+      }
+      .rule__body {
+        font-family: var(--font-serif);
+        font-size: 15px;
+        line-height: 1.55;
+        color: var(--editors-ink-2);
+        margin: 0;
+        max-width: 64ch;
+      }
+
+      /* ═══════════════════════════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════════════════════════ */
+      .footer {
+        border-top: 1px solid var(--hairline-rule);
+        margin-top: 24px;
+        padding: 36px 0 56px;
+      }
+      .footer__inner {
+        max-width: 60rem;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      @media (min-width: 640px) {
+        .footer__inner {
+          padding: 0 3.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="masthead__inner">
+        <div class="mark" aria-hidden="true"></div>
+        <span class="wordmark">Analytics Agent</span>
+        <span class="tagline">Reference · Design Tokens</span>
+      </div>
+    </header>
+
+    <main class="page">
+      <!-- ═════════════ HERO ═════════════ -->
+      <section class="hero">
+        <div class="kicker hero__kicker">Reference. 04.30.2026.</div>
+        <h1 class="display">The Editorial Paper, in tokens.</h1>
+        <p class="hero__lede">
+          A designer's reference for the Analytics Agent design system —
+          every primitive (colour, type, radius) listed at full
+          specification, paired with a live specimen and the component
+          aliases that compose them. The page itself is rendered in the
+          register it documents.
+        </p>
+      </section>
+
+      <!-- ═════════════ 01 · COLORS ═════════════ -->
+      <section class="section" id="colors">
+        <header class="section__header">
+          <span class="kicker kicker--accent">01. Colors.</span>
+          <h2 class="headline">A printer's palette.</h2>
+        </header>
+
+        <p class="section__lede">
+          Warm cream paper, warm near-black ink, a single ink-blue accent
+          stamp, and a four-step chart palette borrowed from press inks.
+          Every neutral is tinted toward <em>hue 75 at chroma 0.005</em>,
+          which is the mechanism behind the cream surface — the page reads
+          as paper because the neutrals are warm.
+        </p>
+
+        <h3 class="subtitle">Primary — the single voice</h3>
+        <div class="swatch-grid">
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--ink-blue-stamp);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Ink-Blue Stamp</div>
+              <code class="swatch__value">oklch(0.42 0.1 250)</code>
+              <code class="swatch__var">--ink-blue-stamp</code>
+              <p class="swatch__use">
+                The single accent. Ask pill hover fill, masthead mark,
+                user-bubble left rule, focus ring, chart series 1.
+                <em>≤10% surface coverage at all times.</em>
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--ink-blue-stamp-deep);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Ink-Blue Stamp Deep</div>
+              <code class="swatch__value">oklch(0.36 0.12 250)</code>
+              <code class="swatch__var">--ink-blue-stamp-deep</code>
+              <p class="swatch__use">
+                Deeper variant for italic emphasis on prose, accent-link
+                hover, and the <em>Q.</em> kicker.
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div class="swatch__chip swatch__chip--checker">
+              <div
+                class="swatch__chip-fill"
+                style="background: var(--ink-blue-stamp-soft);"
+              ></div>
+            </div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Ink-Blue Stamp Soft</div>
+              <code class="swatch__value">oklch(0.42 0.1 250 / 0.12)</code>
+              <code class="swatch__var">--ink-blue-stamp-soft</code>
+              <p class="swatch__use">
+                Base accent at 12% alpha. Backs the resting Ask pill and
+                the focus-within composer ring. <em>Never on a card.</em>
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <h3 class="subtitle">Secondary — destructive ink</h3>
+        <div class="swatch-grid">
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--printers-mark-red);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Printer's Mark Red</div>
+              <code class="swatch__value">oklch(0.5 0.18 28)</code>
+              <code class="swatch__var">--printers-mark-red</code>
+              <p class="swatch__use">
+                Destructive register. Lives on the <em>Note.</em> kicker,
+                the Stop pill border + text, and the rate-limit countdown.
+                <em>Ink, never fill.</em>
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <h3 class="subtitle">Tertiary — chart palette (series 2–5)</h3>
+        <div class="swatch-grid">
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--composing-stick);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Composing Stick</div>
+              <code class="swatch__value">oklch(0.32 0.02 75)</code>
+              <code class="swatch__var">--composing-stick</code>
+              <p class="swatch__use">
+                Series 2. Warm near-black at desaturated chroma — the ink
+                the press laid down before the colored runs.
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--letterpress-sienna);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Letterpress Sienna</div>
+              <code class="swatch__value">oklch(0.55 0.13 35)</code>
+              <code class="swatch__var">--letterpress-sienna</code>
+              <p class="swatch__use">
+                Series 3. A muted red-orange in the register of an
+                iron-oxide press ink.
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--folio-ochre);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Folio Ochre</div>
+              <code class="swatch__value">oklch(0.62 0.12 75)</code>
+              <code class="swatch__var">--folio-ochre</code>
+              <p class="swatch__use">
+                Series 4. Same hue family as the cream surface, lifted into
+                a saturated mid-tone. Source hue for the user-bubble's
+                <em>9% wash</em>.
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--compositor-teal);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Compositor Teal</div>
+              <code class="swatch__value">oklch(0.5 0.08 200)</code>
+              <code class="swatch__var">--compositor-teal</code>
+              <p class="swatch__use">
+                Series 5. A muted slate-teal — the cool counterweight to
+                sienna and ochre.
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <h3 class="subtitle">Neutral — the cream system</h3>
+        <div class="swatch-grid">
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--warm-ash-cream); border-bottom: 1px solid var(--hairline-rule);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Warm Ash Cream</div>
+              <code class="swatch__value">oklch(0.97 0.005 75)</code>
+              <code class="swatch__var">--warm-ash-cream</code>
+              <p class="swatch__use">
+                The surface. Page body, all card and popover backgrounds,
+                the masthead, the composer base.
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--warm-ash-cream-2); border-bottom: 1px solid var(--hairline-rule);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Warm Ash Cream 2</div>
+              <code class="swatch__value">oklch(0.94 0.005 75)</code>
+              <code class="swatch__var">--warm-ash-cream-2</code>
+              <p class="swatch__use">
+                The figure-inset surface. SQL block <em>&lt;pre&gt;</em>,
+                table sticky <em>&lt;thead&gt;</em>, hover row fills.
+                <em>One shade darker on the same paper.</em>
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--editors-ink);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Editor's Ink</div>
+              <code class="swatch__value">oklch(0.22 0.005 75)</code>
+              <code class="swatch__var">--editors-ink</code>
+              <p class="swatch__use">
+                The body type colour. Warm near-black at hue 75 —
+                <em>never #000</em>.
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--editors-ink-2);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Editor's Ink 2</div>
+              <code class="swatch__value">oklch(0.42 0.005 75)</code>
+              <code class="swatch__var">--editors-ink-2</code>
+              <p class="swatch__use">
+                Secondary type colour. User-bubble body, italic
+                blockquote, error prose, follow-up chips.
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div
+              class="swatch__chip"
+              style="background: var(--margin-pencil);"
+            ></div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Margin Pencil</div>
+              <code class="swatch__value">oklch(0.58 0.005 75)</code>
+              <code class="swatch__var">--margin-pencil</code>
+              <p class="swatch__use">
+                The captioning ink. Mono kickers, axis labels, table
+                headers, captions, the keyboard-hint footer.
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div class="swatch__chip swatch__chip--checker">
+              <div
+                class="swatch__chip-fill"
+                style="background: var(--hairline-rule);"
+              ></div>
+            </div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Hairline Rule</div>
+              <code class="swatch__value">oklch(0.22 0.005 75 / 0.16)</code>
+              <code class="swatch__var">--hairline-rule</code>
+              <p class="swatch__use">
+                The default 1px border. <em>Editor's ink at 16% alpha</em>
+                — the divider that does the work elevation usually does.
+              </p>
+            </div>
+          </article>
+
+          <article class="swatch">
+            <div class="swatch__chip swatch__chip--checker">
+              <div
+                class="swatch__chip-fill"
+                style="background: var(--hairline-rule-strong);"
+              ></div>
+            </div>
+            <div class="swatch__meta">
+              <div class="swatch__name">Hairline Rule Strong</div>
+              <code class="swatch__value">oklch(0.22 0.005 75 / 0.36)</code>
+              <code class="swatch__var">--hairline-rule-strong</code>
+              <p class="swatch__use">
+                Reserved heavier rule for inputs that need to read at
+                distance. Rare.
+              </p>
+            </div>
+          </article>
+        </div>
+
+        <h3 class="subtitle">Named rules</h3>
+        <div class="rules">
+          <div class="rule">
+            <p class="rule__name">The One Voice Rule.</p>
+            <p class="rule__body">
+              The accent is the only voice. Ink-Blue Stamp and its two
+              variants are the only saturated colours allowed on chrome —
+              buttons, kickers, focus rings, links, the masthead mark,
+              series 1. Tertiary chart colours are only allowed inside the
+              <em>&lt;figure&gt;</em> boundary. Total accent coverage stays
+              ≤10% of any visible surface.
+            </p>
+          </div>
+          <div class="rule">
+            <p class="rule__name">The Cream Rule.</p>
+            <p class="rule__body">
+              No <em>#fff</em>, no <em>#000</em>, no purely chromatic
+              neutrals. Every neutral is tinted toward warm hue 75 at
+              chroma 0.005 — the surface leans amber so the page reads as
+              paper, not cold tile.
+            </p>
+          </div>
+          <div class="rule">
+            <p class="rule__name">The Destructive-Is-A-Note Rule.</p>
+            <p class="rule__body">
+              Printer's Mark Red appears as ink, never as a surface fill.
+              The <em>Note.</em> kicker is red. The Stop button has a red
+              border and red text on a 5%-alpha red wash. There is no
+              destructive card, no red banner, no flooded warning surface.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════════ 02 · TYPOGRAPHY ═════════════ -->
+      <section class="section" id="typography">
+        <header class="section__header">
+          <span class="kicker kicker--accent">02. Typography.</span>
+          <h2 class="headline">Two families, six roles.</h2>
+        </header>
+
+        <p class="section__lede">
+          Iowan Old Style with a Palatino Linotype / Palatino / Georgia
+          fallback chain carries the editorial register at full reading
+          size (17px / 1.62 leading); IBM Plex Mono carries the structural
+          labels — kickers, axes, code, table headers. <em>Italic emphasis
+          is the deliberate device for warmth and pull</em>; bold colour
+          and heavier weight are reserved for primary action and the
+          accent system.
+        </p>
+
+        <article class="specimen">
+          <div class="specimen__spec">
+            <span class="kicker kicker--accent">Display</span>
+            <dl>
+              <dt>Family</dt>
+              <dd>Iowan Old Style</dd>
+              <dt>Size</dt>
+              <dd>clamp(2.375rem, 4vw, 2.625rem)</dd>
+              <dt>Weight</dt>
+              <dd>500</dd>
+              <dt>Leading</dt>
+              <dd>1.1</dd>
+              <dt>Tracking</dt>
+              <dd>-0.01em</dd>
+              <dt>Cap</dt>
+              <dd>18ch</dd>
+            </dl>
+            <p class="specimen__purpose">
+              Empty-state hero only. Capped at 18ch so the line breaks
+              before it overruns the reading column.
+            </p>
+          </div>
+          <div class="specimen__example">
+            <p class="t-display">Hi, what would you like to know?</p>
+          </div>
+        </article>
+
+        <article class="specimen">
+          <div class="specimen__spec">
+            <span class="kicker kicker--accent">Headline</span>
+            <dl>
+              <dt>Family</dt>
+              <dd>Iowan Old Style</dd>
+              <dt>Size</dt>
+              <dd>1.4375rem · 23px</dd>
+              <dt>Weight</dt>
+              <dd>400</dd>
+              <dt>Leading</dt>
+              <dd>1.2</dd>
+            </dl>
+            <p class="specimen__purpose">
+              Markdown <em>&lt;h1&gt;</em> inside an answer. Reserved for
+              the rare answer that benefits from a section break.
+            </p>
+          </div>
+          <div class="specimen__example">
+            <p class="t-headline">Monthly revenue across 2017.</p>
+          </div>
+        </article>
+
+        <article class="specimen">
+          <div class="specimen__spec">
+            <span class="kicker kicker--accent">Title</span>
+            <dl>
+              <dt>Family</dt>
+              <dd>Iowan Old Style</dd>
+              <dt>Size</dt>
+              <dd>1.25rem · 20px</dd>
+              <dt>Weight</dt>
+              <dd>400</dd>
+              <dt>Leading</dt>
+              <dd>1.2</dd>
+            </dl>
+            <p class="specimen__purpose">
+              Markdown <em>&lt;h2&gt;</em>. The h3 variant drops to
+              1.125rem; h4 matches body size at semibold. Dialog titles
+              use this role at semibold.
+            </p>
+          </div>
+          <div class="specimen__example">
+            <p class="t-title">Top categories by revenue.</p>
+          </div>
+        </article>
+
+        <article class="specimen">
+          <div class="specimen__spec">
+            <span class="kicker kicker--accent">Body</span>
+            <dl>
+              <dt>Family</dt>
+              <dd>Iowan Old Style</dd>
+              <dt>Size</dt>
+              <dd>1.0625rem · 17px</dd>
+              <dt>Weight</dt>
+              <dd>400</dd>
+              <dt>Leading</dt>
+              <dd>1.62</dd>
+              <dt>Cap</dt>
+              <dd>60ch (prose)</dd>
+              <dt>Features</dt>
+              <dd>kern, liga, calt</dd>
+            </dl>
+            <p class="specimen__purpose">
+              The reading column. Italic is the deliberate emphasis
+              variant — same family / weight / leading, differs only by
+              <em>font-style: italic</em>.
+            </p>
+          </div>
+          <div class="specimen__example">
+            <p class="t-body">
+              Revenue grew from R$ 67,930 in January to R$ 1,153,247 in
+              November — a steady climb with a single seasonal spike in
+              Q4. The <em>cumulative</em> shape is the headline; the
+              monthly bars carry the texture.
+            </p>
+            <p class="t-body t-body-italic" style="margin-top: 12px;">
+              The same body in italic — the user-prose register and the
+              caption register both live here.
+            </p>
+          </div>
+        </article>
+
+        <article class="specimen">
+          <div class="specimen__spec">
+            <span class="kicker kicker--accent">Label · Mono Kicker</span>
+            <dl>
+              <dt>Family</dt>
+              <dd>IBM Plex Mono</dd>
+              <dt>Size</dt>
+              <dd>0.6875rem · 11px</dd>
+              <dt>Weight</dt>
+              <dd>500</dd>
+              <dt>Leading</dt>
+              <dd>1</dd>
+              <dt>Tracking</dt>
+              <dd>0.14em</dd>
+              <dt>Variants</dt>
+              <dd>10.5px / 0.10em uppercase · 9.5px tightest (axes)</dd>
+            </dl>
+            <p class="specimen__purpose">
+              Opens every editorial unit. <em>Q.</em> a question, <em
+                >Answer.</em
+              >
+              an answer, <em>Note.</em> an error, <em>Working.</em> a
+              placeholder. One-period terminator — reads as a printer's
+              notation, not a button label.
+            </p>
+          </div>
+          <div
+            class="specimen__example"
+            style="display: flex; flex-direction: column; gap: 6px;"
+          >
+            <span class="t-label" style="color: var(--ink-blue-stamp-deep);"
+              >Q.</span
+            >
+            <span class="t-label">Answer.</span>
+            <span class="t-label" style="color: var(--printers-mark-red);"
+              >Note.</span
+            >
+            <span class="t-label">Working.</span>
+            <span class="t-label">Stopped.</span>
+            <span class="t-label kicker--uppercase">Figure · Bar chart</span>
+          </div>
+        </article>
+
+        <article class="specimen">
+          <div class="specimen__spec">
+            <span class="kicker kicker--accent">Mono Data</span>
+            <dl>
+              <dt>Family</dt>
+              <dd>IBM Plex Mono</dd>
+              <dt>Size</dt>
+              <dd>0.78125rem · 12.5px</dd>
+              <dt>Weight</dt>
+              <dd>400</dd>
+              <dt>Leading</dt>
+              <dd>1.65</dd>
+              <dt>Features</dt>
+              <dd>tnum (numeric cells)</dd>
+            </dl>
+            <p class="specimen__purpose">
+              Figure-inset code register. SQL block body, inline
+              <em>&lt;code&gt;</em>, fenced <em>&lt;pre&gt;</em>, and the
+              numeric column cells of result tables.
+            </p>
+          </div>
+          <div class="specimen__example">
+            <pre class="ds-sql-pre">SELECT
+  date_trunc('month', purchase_date) AS month,
+  SUM(price + freight_value) AS revenue
+FROM orders
+WHERE tenant_id = $TENANT_ID
+GROUP BY 1 ORDER BY 1;</pre>
+          </div>
+        </article>
+
+        <h3 class="subtitle" style="margin-top: 36px;">Named rules</h3>
+        <div class="rules">
+          <div class="rule">
+            <p class="rule__name">The Single-Family Rule.</p>
+            <p class="rule__body">
+              Iowan Old Style and IBM Plex Mono are the only families.
+              No third family, no display-only face, no decorative script.
+              <em>The body type is the brand.</em>
+            </p>
+          </div>
+          <div class="rule">
+            <p class="rule__name">The Italic-Emphasis Rule.</p>
+            <p class="rule__body">
+              Italic is the canonical emphasis device. Bold and colour
+              are reserved for primary action and the accent system —
+              never use <em>&lt;strong&gt;</em> or accent colour as a
+              substitute for italic emphasis on prose.
+            </p>
+          </div>
+          <div class="rule">
+            <p class="rule__name">The Kicker Rule.</p>
+            <p class="rule__body">
+              Every editorial unit opens with a mono small-caps kicker at
+              11px / 0.14em with a one-period terminator.
+            </p>
+          </div>
+          <div class="rule">
+            <p class="rule__name">The 60ch Rule.</p>
+            <p class="rule__body">
+              Body prose never exceeds 60 characters per line, regardless
+              of viewport width. Figures (charts, tables) may exceed the
+              prose column inside their <em>&lt;figure&gt;</em>
+              boundary, but only inside.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════════ 03 · RADII ═════════════ -->
+      <section class="section" id="radii">
+        <header class="section__header">
+          <span class="kicker kicker--accent">03. Radii.</span>
+          <h2 class="headline">Five steps from sharp to capsule.</h2>
+        </header>
+
+        <p class="section__lede">
+          A short scale. <em>sm</em> for the composer shell, <em>md</em>
+          for the SQL block, <em>lg</em> for buttons and inputs, <em>xl</em>
+          for cards and dialogs, and <em>full</em> for the Ask / Stop pill
+          which is the only fully-rounded surface in the system.
+        </p>
+
+        <div class="radii-grid">
+          <div class="radius-sample">
+            <div
+              class="radius-sample__shape"
+              style="border-radius: var(--rounded-sm);"
+            ></div>
+            <div class="radius-sample__caption">
+              <span class="t-label">sm</span>
+              <code>0.3rem · ~4.8px</code>
+            </div>
+          </div>
+
+          <div class="radius-sample">
+            <div
+              class="radius-sample__shape"
+              style="border-radius: var(--rounded-md);"
+            ></div>
+            <div class="radius-sample__caption">
+              <span class="t-label">md</span>
+              <code>0.4rem · ~6.4px</code>
+            </div>
+          </div>
+
+          <div class="radius-sample">
+            <div
+              class="radius-sample__shape"
+              style="border-radius: var(--rounded-lg);"
+            ></div>
+            <div class="radius-sample__caption">
+              <span class="t-label">lg</span>
+              <code>0.5rem · 8px</code>
+            </div>
+          </div>
+
+          <div class="radius-sample">
+            <div
+              class="radius-sample__shape"
+              style="border-radius: var(--rounded-xl);"
+            ></div>
+            <div class="radius-sample__caption">
+              <span class="t-label">xl</span>
+              <code>0.7rem · ~11.2px</code>
+            </div>
+          </div>
+
+          <div class="radius-sample">
+            <div
+              class="radius-sample__shape"
+              style="border-radius: var(--rounded-full);"
+            ></div>
+            <div class="radius-sample__caption">
+              <span class="t-label">full</span>
+              <code>9999px</code>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════════ 04 · COMPONENT ALIASES ═════════════ -->
+      <section class="section" id="components">
+        <header class="section__header">
+          <span class="kicker kicker--accent">04. Components.</span>
+          <h2 class="headline">Token compositions.</h2>
+        </header>
+
+        <p class="section__lede">
+          The component aliases below resolve every property to a primitive.
+          Each recipe shows the live render on the left and the token table
+          on the right, so swapping a primitive (say, redefining
+          <em>--ink-blue-stamp</em>) re-styles the entire component without
+          a code change.
+        </p>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">button-ask-pill</span>
+            <p class="recipe__name">Ask Pill — composer submit.</p>
+          </header>
+          <div class="recipe__demo">
+            <button class="ds-ask-pill" type="button">Ask</button>
+          </div>
+          <dl class="recipe__tokens">
+            <dt>background</dt>
+            <dd><code>--ink-blue-stamp-soft</code></dd>
+            <dt>color</dt>
+            <dd><code>--ink-blue-stamp-deep</code></dd>
+            <dt>border</dt>
+            <dd><code>1px --ink-blue-stamp</code></dd>
+            <dt>radius</dt>
+            <dd><code>--rounded-full</code></dd>
+            <dt>padding</dt>
+            <dd><code>6px 14px</code></dd>
+            <dt>type</dt>
+            <dd><code>label / 11px / 0.14em / uppercase</code></dd>
+            <dt>:hover</dt>
+            <dd>
+              <code>bg → --ink-blue-stamp · color → --warm-ash-cream</code>
+            </dd>
+          </dl>
+        </article>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">button-stop-pill</span>
+            <p class="recipe__name">
+              Stop Pill — destructive mirror of Ask.
+            </p>
+          </header>
+          <div class="recipe__demo">
+            <button class="ds-stop-pill" type="button">Stop</button>
+          </div>
+          <dl class="recipe__tokens">
+            <dt>background</dt>
+            <dd><code>oklch(0.5 0.18 28 / 0.05)</code></dd>
+            <dt>color</dt>
+            <dd><code>--printers-mark-red</code></dd>
+            <dt>border</dt>
+            <dd><code>1px oklch(0.5 0.18 28 / 0.30)</code></dd>
+            <dt>radius</dt>
+            <dd><code>--rounded-full</code></dd>
+            <dt>padding</dt>
+            <dd><code>6px 14px</code></dd>
+            <dt>type</dt>
+            <dd><code>label / 11px / 0.14em / uppercase</code></dd>
+          </dl>
+        </article>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">button-primary</span>
+            <p class="recipe__name">Primary action — rectangular.</p>
+          </header>
+          <div class="recipe__demo">
+            <button class="ds-btn-primary" type="button">Save changes</button>
+          </div>
+          <dl class="recipe__tokens">
+            <dt>background</dt>
+            <dd><code>--ink-blue-stamp</code></dd>
+            <dt>color</dt>
+            <dd><code>--warm-ash-cream</code></dd>
+            <dt>radius</dt>
+            <dd><code>--rounded-lg</code></dd>
+            <dt>padding</dt>
+            <dd><code>0 10px</code></dd>
+            <dt>height</dt>
+            <dd><code>32px</code></dd>
+          </dl>
+        </article>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">button-outline</span>
+            <p class="recipe__name">Outline — quiet secondary.</p>
+          </header>
+          <div class="recipe__demo">
+            <button class="ds-btn-outline" type="button">Cancel</button>
+          </div>
+          <dl class="recipe__tokens">
+            <dt>background</dt>
+            <dd><code>transparent</code></dd>
+            <dt>color</dt>
+            <dd><code>--editors-ink</code></dd>
+            <dt>border</dt>
+            <dd><code>1px --hairline-rule-strong</code></dd>
+            <dt>radius</dt>
+            <dd><code>--rounded-lg</code></dd>
+            <dt>padding</dt>
+            <dd><code>0 10px</code></dd>
+            <dt>height</dt>
+            <dd><code>32px</code></dd>
+          </dl>
+        </article>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">button-ghost</span>
+            <p class="recipe__name">Ghost — chrome action.</p>
+          </header>
+          <div class="recipe__demo">
+            <button class="ds-btn-ghost" type="button">More</button>
+          </div>
+          <dl class="recipe__tokens">
+            <dt>background</dt>
+            <dd><code>transparent</code></dd>
+            <dt>color</dt>
+            <dd><code>--editors-ink</code></dd>
+            <dt>radius</dt>
+            <dd><code>--rounded-lg</code></dd>
+            <dt>padding</dt>
+            <dd><code>0 10px</code></dd>
+            <dt>:hover bg</dt>
+            <dd><code>--warm-ash-cream-2</code></dd>
+          </dl>
+        </article>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">input-default</span>
+            <p class="recipe__name">Input — hairline-bordered field.</p>
+          </header>
+          <div class="recipe__demo">
+            <input
+              class="ds-input"
+              type="text"
+              placeholder="Search sessions"
+              aria-label="Search"
+            />
+          </div>
+          <dl class="recipe__tokens">
+            <dt>background</dt>
+            <dd><code>transparent</code></dd>
+            <dt>color</dt>
+            <dd><code>--editors-ink</code></dd>
+            <dt>border</dt>
+            <dd><code>1px --hairline-rule-strong</code></dd>
+            <dt>radius</dt>
+            <dd><code>--rounded-lg</code></dd>
+            <dt>padding</dt>
+            <dd><code>4px 10px</code></dd>
+            <dt>height</dt>
+            <dd><code>32px</code></dd>
+            <dt>:focus border</dt>
+            <dd><code>--ink-blue-stamp · ring 2px / 10%</code></dd>
+          </dl>
+        </article>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">card-default</span>
+            <p class="recipe__name">Card — flat by default.</p>
+          </header>
+          <div class="recipe__demo">
+            <div class="ds-card">
+              <span class="t-label">Note.</span>
+              <p
+                class="t-body"
+                style="margin-top: 8px; font-size: 15px; line-height: 1.5;"
+              >
+                A flat card. Hairline border, cream surface, no shadow at
+                rest.
+              </p>
+            </div>
+          </div>
+          <dl class="recipe__tokens">
+            <dt>background</dt>
+            <dd><code>--warm-ash-cream</code></dd>
+            <dt>color</dt>
+            <dd><code>--editors-ink</code></dd>
+            <dt>border</dt>
+            <dd><code>1px --hairline-rule</code></dd>
+            <dt>radius</dt>
+            <dd><code>--rounded-xl</code></dd>
+            <dt>padding</dt>
+            <dd><code>16px</code></dd>
+            <dt>shadow</dt>
+            <dd><code>none</code></dd>
+          </dl>
+        </article>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">composer-shell</span>
+            <p class="recipe__name">Composer — bare hairline rectangle.</p>
+          </header>
+          <div class="recipe__demo">
+            <form
+              class="ds-composer"
+              onsubmit="event.preventDefault();"
+              aria-label="Composer demo"
+            >
+              <textarea
+                class="ds-composer__textarea"
+                rows="1"
+                placeholder="ask anything about the dataset, in plain English"
+              ></textarea>
+              <button class="ds-ask-pill" type="submit">Ask</button>
+            </form>
+          </div>
+          <dl class="recipe__tokens">
+            <dt>background</dt>
+            <dd><code>transparent / --warm-ash-cream</code></dd>
+            <dt>color</dt>
+            <dd><code>--editors-ink</code></dd>
+            <dt>border</dt>
+            <dd><code>1px --hairline-rule</code></dd>
+            <dt>radius</dt>
+            <dd><code>--rounded-sm</code></dd>
+            <dt>padding</dt>
+            <dd><code>10px 4px</code></dd>
+            <dt>:focus-within</dt>
+            <dd>
+              <code>border → --ink-blue-stamp · ring 2px / 10%</code>
+            </dd>
+          </dl>
+        </article>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">sql-block-pre</span>
+            <p class="recipe__name">SQL block — figure-inset code.</p>
+          </header>
+          <div class="recipe__demo">
+            <pre class="ds-sql-pre" style="width: 100%; max-width: 320px;">SELECT name, total
+FROM categories
+LIMIT 8;</pre>
+          </div>
+          <dl class="recipe__tokens">
+            <dt>background</dt>
+            <dd><code>--warm-ash-cream-2</code></dd>
+            <dt>color</dt>
+            <dd><code>--editors-ink</code></dd>
+            <dt>border</dt>
+            <dd><code>1px --hairline-rule</code></dd>
+            <dt>radius</dt>
+            <dd><code>--rounded-md</code></dd>
+            <dt>padding</dt>
+            <dd><code>12px 14px</code></dd>
+            <dt>type</dt>
+            <dd><code>mono-data / 12.5px / 1.65</code></dd>
+          </dl>
+        </article>
+
+        <article class="recipe">
+          <header class="recipe__header">
+            <span class="kicker">user-bubble · sanctioned exception</span>
+            <p class="recipe__name">
+              Quotation block — the only colored side-stripe in the system.
+            </p>
+          </header>
+          <div class="recipe__demo">
+            <div class="ds-user-bubble">
+              <div class="ds-user-bubble__kicker">Q.</div>
+              <p class="ds-user-bubble__body">
+                How did cumulative orders grow over 2017?
+              </p>
+            </div>
+          </div>
+          <dl class="recipe__tokens">
+            <dt>border-left</dt>
+            <dd><code>2px --ink-blue-stamp</code></dd>
+            <dt>background</dt>
+            <dd><code>--folio-ochre / 9% alpha</code></dd>
+            <dt>radius</dt>
+            <dd><code>0 4px 4px 0 (asymmetric)</code></dd>
+            <dt>padding</dt>
+            <dd><code>9px 14px 9px 16px</code></dd>
+            <dt>kicker</dt>
+            <dd><code>--ink-blue-stamp-deep · 11px mono</code></dd>
+            <dt>body</dt>
+            <dd><code>italic 18px · --editors-ink-2 · 56ch</code></dd>
+          </dl>
+        </article>
+      </section>
+
+      <!-- ═════════════ 05 · ELEVATION / SHADOWS ═════════════ -->
+      <section class="section" id="shadows">
+        <header class="section__header">
+          <span class="kicker kicker--accent">05. Elevation.</span>
+          <h2 class="headline">Three shadows, all transient.</h2>
+        </header>
+
+        <p class="section__lede">
+          The system is flat by default — cards, buttons, inputs, message
+          bubbles carry no shadow at rest. Depth comes from hairline rules
+          and tonal layering between cream and surface-2. <em>Shadow is
+          reserved for transient floating surfaces</em> — dropdown popups,
+          dialogs, chart tooltips.
+        </p>
+
+        <div class="shadow-grid">
+          <div class="shadow-sample">
+            <div
+              class="shadow-sample__plate shadow-sample__plate--popup"
+            ></div>
+            <div style="text-align: center; display: flex; flex-direction: column; gap: 4px;">
+              <span class="t-label">popup-elevation</span>
+              <code style="font-size: 10.5px;">
+                0 8px 24px -4px oklch(0.22 0.005 75 / 0.18)
+              </code>
+              <span
+                class="t-body t-body-italic"
+                style="font-size: 13px; color: var(--margin-pencil);"
+              >
+                Sessions dropdown · Recharts tooltip.
+              </span>
+            </div>
+          </div>
+
+          <div class="shadow-sample">
+            <div
+              class="shadow-sample__plate shadow-sample__plate--md"
+            ></div>
+            <div style="text-align: center; display: flex; flex-direction: column; gap: 4px;">
+              <span class="t-label">dropdown-md</span>
+              <code style="font-size: 10.5px;">tailwind shadow-md</code>
+              <span
+                class="t-body t-body-italic"
+                style="font-size: 13px; color: var(--margin-pencil);"
+              >
+                Base UI Menu popup body.
+              </span>
+            </div>
+          </div>
+
+          <div class="shadow-sample">
+            <div
+              class="shadow-sample__plate shadow-sample__plate--lg"
+            ></div>
+            <div style="text-align: center; display: flex; flex-direction: column; gap: 4px;">
+              <span class="t-label">dropdown-lg</span>
+              <code style="font-size: 10.5px;">tailwind shadow-lg</code>
+              <span
+                class="t-body t-body-italic"
+                style="font-size: 13px; color: var(--margin-pencil);"
+              >
+                Submenu — one step heavier than its parent.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subtitle" style="margin-top: 24px;">Named rules</h3>
+        <div class="rules">
+          <div class="rule">
+            <p class="rule__name">The Flat-By-Default Rule.</p>
+            <p class="rule__body">
+              Resting surfaces are flat. Cards, buttons, inputs, message
+              bubbles, the masthead, the composer — none carry a shadow at
+              rest. If a surface needs depth, it gets a hairline rule and
+              a tonal step on the same paper.
+            </p>
+          </div>
+          <div class="rule">
+            <p class="rule__name">The Popup-Only Shadow Rule.</p>
+            <p class="rule__body">
+              Shadows are reserved for transient floating surfaces. A
+              persistent shadow on a card is always wrong in this system —
+              the appearance of a shadow is the reader's signal that the
+              surface is temporarily lifted off the page.
+            </p>
+          </div>
+          <div class="rule">
+            <p class="rule__name">The Hairline Rule.</p>
+            <p class="rule__body">
+              A 1px border at <em>--hairline-rule</em> alpha does the
+              work elevation usually does. Hairline above and below a
+              figure, hairline beneath the masthead, hairline atop the
+              composer. <em>The system reads as paper because the
+              divisions are inked, not lifted.</em>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════════ 06 · DO'S & DON'TS ═════════════ -->
+      <section class="section" id="rules">
+        <header class="section__header">
+          <span class="kicker kicker--accent">06. Contracts.</span>
+          <h2 class="headline">Do's, don'ts.</h2>
+        </header>
+
+        <p class="section__lede">
+          The values are the easy part. These contracts are what keep the
+          system from drifting once a designer or engineer starts composing
+          tokens into screens.
+        </p>
+
+        <h3 class="subtitle">Do.</h3>
+        <ul
+          class="reading-column"
+          style="padding-left: 20px; margin: 0 0 24px;"
+        >
+          <li style="margin-bottom: 10px;">
+            Open every editorial unit with a mono small-caps kicker —
+            <em>Q.</em>, <em>Answer.</em>, <em>Note.</em>,
+            <em>Working.</em>, <em>Stopped.</em>, <em>Figure ·</em>,
+            <em>Try</em>.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Cap body prose at 60 characters per line. Figures and tables
+            may exceed the prose column inside their <em>&lt;figure&gt;</em>
+            boundary, but only inside.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Use italic for emphasis. Italic carries the warmth-and-pull
+            register; bold and accent are reserved for action.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Treat error states with the same care as success — italic
+            serif on a hairline-bordered block, a printer's-note kicker,
+            no flooded red surface.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Keep accent coverage <em>≤10%</em> of any visible surface.
+            Never on a card background.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Stay flat by default. Hairline rules and a tonal step on the
+            same paper, not a drop shadow.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Tint every neutral toward warm hue 75 at chroma 0.005.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Keep the chart palette deliberately muted — all five series
+            at lightness ≤0.55. Hue separation does the differentiation
+            work.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Keep the type system to two families — Iowan Old Style and
+            IBM Plex Mono.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Use the user-bubble's accent left rule only in its full
+            canonical form — paired with the <em>Q.</em> kicker, ochre
+            wash, asymmetric radius, italic 18px body.
+          </li>
+        </ul>
+
+        <h3 class="subtitle">Don't.</h3>
+        <ul
+          class="reading-column"
+          style="padding-left: 20px; margin: 0;"
+        >
+          <li style="margin-bottom: 10px;">
+            Use <em>border-left</em> or <em>border-right</em> greater than
+            1px as a colored stripe accent on cards, list items, or alerts.
+            The user-bubble is the <em>only</em> sanctioned exception.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Use <em>background-clip: text</em> with gradients. Single
+            solid colour for type, always.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Use decorative glassmorphism, blurred backgrounds, or glass
+            cards stacked over a colored backdrop.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Add the hero-metric SaaS dashboard cliché — big number, tiny
+            label, gradient accent, supporting stats grid.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Render identical card grids with icon-heading-text. The
+            numbered, hairline-divided sample-query list is the editorial
+            replacement.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Introduce a third type family — no sans-serif body, no
+            display-only face, no decorative script.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Use exclamation points anywhere. The system reports state. It
+            does not perform feelings.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Use emoji or chatty assistant tone in error and empty states.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Use bold colour or heavier weight as the primary emphasis
+            device on prose. Italic carries weight contrast.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Flood the surface with destructive red.
+            <em>Printer's Mark Red</em> is an ink, not a fill.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Ship a dark theme. There is one theme — Editorial Paper.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Use toy-box pastel rainbow palettes for charts. The 5-step
+            palette stays at lightness ≤0.55.
+          </li>
+          <li style="margin-bottom: 10px;">
+            Stack nested cards. Use <em>&lt;figure&gt;</em> with hairline
+            rules and surface-2 insets instead.
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <span class="t-label">Source · DESIGN.md.</span>
+        <p
+          class="t-body t-body-italic"
+          style="font-size: 14px; color: var(--margin-pencil); max-width: 64ch;"
+        >
+          Generated 04.30.2026 from the system specification at
+          <code>/DESIGN.md</code>. The page is rendered in the same
+          register it documents — single cream theme, italic emphasis,
+          hairline rules, no shadow at rest.
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
