@@ -51,8 +51,6 @@ flowchart LR
     class Filter filter;
 ```
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the deeper technical writeup.
-
 ## Inside the agent
 
 The agent is split across five focused files. Everything else in this repo (UI, API routes, persistence, rate limiting) is a thin shell around them. This section is a precision index — every cell is a clickable link to the source line.
@@ -153,16 +151,16 @@ The unit tests in [`tests/biTools.test.ts`](./tests/biTools.test.ts) prove each 
 
 ## Try these (one per chart type)
 
-| Chart       | Question                                                                  |
-| ----------- | ------------------------------------------------------------------------- |
-| 📈 line     | _Show me monthly revenue trends across 2017_                              |
-| 🌊 area     | _How did cumulative orders grow over 2017?_                               |
-| 📊 bar      | _What are the top 10 product categories by revenue?_                      |
-| 🏆 ranked   | _Rank the top 15 sellers by total revenue shipped_                        |
-| 🧱 stacked  | _Show payment type composition by month across 2017_                      |
-| 🥧 pie      | _Break down orders by payment method_                                     |
-| ✨ scatter  | _Is there a relationship between product price and review score?_         |
-| 📋 table    | _List the top 20 sellers by average review score, minimum 50 reviews_     |
+| Chart      | Question                                                              |
+| ---------- | --------------------------------------------------------------------- |
+| 📈 line    | _Show me monthly revenue trends across 2017_                          |
+| 🌊 area    | _How did cumulative orders grow over 2017?_                           |
+| 📊 bar     | _What are the top 10 product categories by revenue?_                  |
+| 🏆 ranked  | _Rank the top 15 sellers by total revenue shipped_                    |
+| 🧱 stacked | _Show payment type composition by month across 2017_                  |
+| 🥧 pie     | _Break down orders by payment method_                                 |
+| ✨ scatter | _Is there a relationship between product price and review score?_     |
+| 📋 table   | _List the top 20 sellers by average review score, minimum 50 reviews_ |
 
 These are also surfaced as click-to-send chips on the empty chat screen ([`components/chat/SampleQueries.tsx`](./components/chat/SampleQueries.tsx)).
 
