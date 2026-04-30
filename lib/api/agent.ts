@@ -71,11 +71,13 @@ export async function sendQuery(
   userId: string,
   message: string,
   sessionId?: number,
+  signal?: AbortSignal,
 ): Promise<AgentResponse> {
   const res = await fetch("/api/agent", {
     method: "POST",
     headers: headers(userId),
     body: JSON.stringify({ message, sessionId }),
+    signal,
   });
   if (res.status === 429) {
     const body = (await res.json()) as RateLimitError;
