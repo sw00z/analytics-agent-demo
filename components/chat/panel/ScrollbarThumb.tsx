@@ -13,9 +13,13 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   scrollRef: React.RefObject<HTMLDivElement | null>;
+  // "floating" (default): inset rail used by the chat scroll host.
+  // "edge": flush-to-right-edge, full-height rail for compact overflow
+  // surfaces (e.g. SessionsDropdown) that want native-scrollbar placement.
+  variant?: "floating" | "edge";
 }
 
-export function ScrollbarThumb({ scrollRef }: Props) {
+export function ScrollbarThumb({ scrollRef, variant = "floating" }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const thumbRef = useRef<HTMLDivElement>(null);
 
@@ -161,8 +165,9 @@ export function ScrollbarThumb({ scrollRef }: Props) {
       ref={trackRef}
       aria-hidden
       className={cn(
-        // Geometry + rail color come from the scrollbar-track-floating utility.
-        "scrollbar-track-floating z-30 group",
+        // Geometry + rail color come from one of the scrollbar-track-* utilities.
+        variant === "edge" ? "scrollbar-track-edge" : "scrollbar-track-floating",
+        "z-30 group",
         // Asymmetric easing: snappy reveal, 450ms easeOutQuint fade-out.
         "opacity-0 transition-opacity duration-[450ms] [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]",
         "data-[visible=true]:opacity-100 data-[visible=true]:duration-[120ms]",

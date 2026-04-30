@@ -250,6 +250,22 @@
   background: var(--scrollbar-track);
 }
 
+/* Edge-flush rail for compact overflow surfaces (e.g. SessionsDropdown).
+   Same visual register as the floating rail — translucent navy thumb,
+   rounded ends — but positioned where the native scrollbar would sit:
+   flush to the right edge, full height. Parents using this variant should
+   set `overflow-hidden` if they have rounded corners, so the rail clips
+   to the rounded shape. */
+@utility scrollbar-track-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 11px;
+  border-radius: 9999px;
+  background: var(--scrollbar-track);
+}
+
 /* Thumb fills used by the floating overlay. Split into rest + hover utilities
    so the React component can swap them via a `data-active` attribute toggled
    by track hover and active drag. */
